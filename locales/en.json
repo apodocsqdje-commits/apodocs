@@ -61,6 +61,14 @@
     "updating": "Updating results...",
     "academic_hierarchy": "Academic Classification"
   },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page_info": "Page {current} of {total}",
+    "showing": "Showing {from}-{to} of {total} documents",
+    "first": "First page",
+    "last": "Last page"
+  },
   "type": {
     "course": "Course / Notes",
     "exam": "Exam / Past Paper",

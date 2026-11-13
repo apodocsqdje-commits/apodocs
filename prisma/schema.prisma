@@ -24,6 +24,8 @@ model Faculty {
   name        String
   acronym     String
   departments Department[]
+
+  @@index([acronym])
 }
 
 model Department {
@@ -32,6 +34,8 @@ model Department {
   facultyId String
   faculty   Faculty   @relation(fields: [facultyId], references: [id])
   subjects  Subject[]
+
+  @@index([facultyId])
 }
 
 model Subject {
@@ -41,6 +45,9 @@ model Subject {
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id])
   documents    Document[]
+
+  @@index([departmentId])
+  @@index([semester])
 }
 
 model Document {
@@ -57,6 +64,13 @@ model Document {
   subjectId     String
   subject    Subject   @relation(fields: [subjectId], references: [id])
   createdAt  DateTime
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([status, type])
+  @@index([subjectId])
+  @@index([type])
+  @@index([likes(sort: Desc)])
+  @@index([uploaderToken])
 }
 
 model Admin {

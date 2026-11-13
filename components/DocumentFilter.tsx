@@ -67,6 +67,9 @@ export default function DocumentFilter() {
   const updateUrlFilters = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
 
+    // Reset pagination to page 1 on filter changes
+    params.delete("page");
+
     Object.entries(updates).forEach(([key, value]) => {
       if (value && value.trim()) {
         params.set(key, value.trim());

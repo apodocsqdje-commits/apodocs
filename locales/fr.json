@@ -61,6 +61,14 @@
     "updating": "Mise à jour des résultats...",
     "academic_hierarchy": "Parcours académique"
   },
+  "pagination": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "page_info": "Page {current} sur {total}",
+    "showing": "Affichage de {from}-{to} sur {total} documents",
+    "first": "Première page",
+    "last": "Dernière page"
+  },
   "type": {
     "course": "Cours / Notes",
     "exam": "Examen / Past Paper",

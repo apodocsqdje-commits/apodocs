@@ -10,15 +10,24 @@ import {
 import DocumentFilter from "./DocumentFilter";
 import DocumentCard, { DocumentCardItem } from "./DocumentCard";
 import MyUploadsSection from "./MyUploadsSection";
+import Pagination from "./Pagination";
 import { useI18n } from "@/lib/i18nContext";
 
 interface DocumentsExplorerViewProps {
   documents: DocumentCardItem[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
   hasFiltersApplied: boolean;
 }
 
 export default function DocumentsExplorerView({
   documents,
+  totalCount,
+  currentPage,
+  totalPages,
+  pageSize,
   hasFiltersApplied,
 }: DocumentsExplorerViewProps) {
   const { t, isRTL } = useI18n();
@@ -61,15 +70,27 @@ export default function DocumentsExplorerView({
 
         {/* Results Area */}
         <div className="flex-1 w-full min-w-0">
+          {/* Scroll anchor for pagination */}
+          <div id="documents-results-top" className="scroll-mt-24" />
+
           {/* Uploader's Live Tracker */}
           <MyUploadsSection />
 
           {/* Results Status Bar */}
-          <div className="flex items-center justify-between mb-4 pb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-2">
             <p className="text-xs sm:text-sm font-semibold text-gray-700">
               {t("filter.found_prefix", "Résultats :")}{" "}
-              <span className="text-blue-600 font-bold">{documents.length}</span>{" "}
+              <span className="text-blue-600 font-bold">{totalCount}</span>{" "}
               {t("filter.found_suffix", "document(s)")}
+              {totalPages > 1 && (
+                <span className="text-gray-400 font-normal">
+                  {" "}
+                  •{" "}
+                  {t("pagination.page_info", `Page ${currentPage} sur ${totalPages}`)
+                    .replace("{current}", String(currentPage))
+                    .replace("{total}", String(totalPages))}
+                </span>
+              )}
               {hasFiltersApplied && (
                 <span className="text-gray-400 font-normal"> {t("filter.filtered", "(filtré)")}</span>
               )}
@@ -133,12 +154,22 @@ export default function DocumentsExplorerView({
               )}
             </div>
           ) : (
-            /* Document Cards Grid */
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {documents.map((doc) => (
-                <DocumentCard key={doc.id} document={doc} />
-              ))}
-            </div>
+            <>
+              {/* Document Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {documents.map((doc) => (
+                  <DocumentCard key={doc.id} document={doc} />
+                ))}
+              </div>
+
+              {/* Clean Pagination Bar */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalCount={totalCount}
+                pageSize={pageSize}
+              />
+            </>
           )}
         </div>
       </div>

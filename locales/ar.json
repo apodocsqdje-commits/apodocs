@@ -61,6 +61,14 @@
     "updating": "جاري تحديث النتائج...",
     "academic_hierarchy": "المسار الأكاديمي"
   },
+  "pagination": {
+    "previous": "السابق",
+    "next": "التالي",
+    "page_info": "الصفحة {current} من {total}",
+    "showing": "عرض {from}-{to} من أصل {total} مستند",
+    "first": "الصفحة الأولى",
+    "last": "الصفحة الأخيرة"
+  },
   "type": {
     "course": "دروس ومحاضرات",
     "exam": "امتحانات سابقة",

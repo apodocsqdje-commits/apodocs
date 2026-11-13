@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import DocumentsExplorerView from "@/components/DocumentsExplorerView";
+import { DocumentGridSkeleton } from "@/components/DocumentCardSkeleton";
 import { prisma } from "@/lib/prisma";
 import { NADOR_FACULTIES } from "@/lib/nadorData";
 import { Prisma, DocType } from "@prisma/client";
@@ -12,6 +14,7 @@ type SearchParamsPromise = Promise<{
   semester?: string;
   module?: string;
   type?: string;
+  page?: string;
 }>;
 
 interface PageProps {
@@ -20,7 +23,9 @@ interface PageProps {
 
 export const dynamic = "force-dynamic";
 
-export default async function DocumentsPage({ searchParams }: PageProps) {
+const PAGE_SIZE = 12;
+
+async function DocumentsContent({ searchParams }: { searchParams: SearchParamsPromise }) {
   const resolvedParams = await searchParams;
   const search = typeof resolvedParams.search === "string" ? resolvedParams.search.trim() : "";
   const faculty = typeof resolvedParams.faculty === "string" ? resolvedParams.faculty.trim() : "";
@@ -28,6 +33,9 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
   const semester = typeof resolvedParams.semester === "string" ? resolvedParams.semester.trim() : "";
   const moduleName = typeof resolvedParams.module === "string" ? resolvedParams.module.trim() : "";
   const docType = typeof resolvedParams.type === "string" ? resolvedParams.type.trim() : "";
+  const pageRaw = typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page, 10) : 1;
+  const currentPage = !isNaN(pageRaw) && pageRaw > 0 ? pageRaw : 1;
+  const skip = (currentPage - 1) * PAGE_SIZE;
 
   // Public search results must only display APPROVED documents
   const where: Prisma.DocumentWhereInput = {
@@ -91,30 +99,66 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
     where.subject = subjectWhere;
   }
 
+  let totalCount = 0;
   let documents: any[] = [];
+
   try {
-    documents = await prisma.document.findMany({
-      where,
-      orderBy: {
-        createdAt: "desc",
-      },
-      select: documentCardSelect,
-    });
+    const [countResult, docsResult] = await Promise.all([
+      prisma.document.count({ where }),
+      prisma.document.findMany({
+        where,
+        skip,
+        take: PAGE_SIZE,
+        orderBy: {
+          createdAt: "desc",
+        },
+        select: documentCardSelect,
+      }),
+    ]);
+    totalCount = countResult;
+    documents = docsResult;
   } catch (err) {
     console.error("Documents query error:", err);
   }
 
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const hasFiltersApplied = Boolean(
     search || faculty || filiere || semester || moduleName || docType
   );
 
   return (
+    <DocumentsExplorerView
+      documents={documents}
+      totalCount={totalCount}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      pageSize={PAGE_SIZE}
+      hasFiltersApplied={hasFiltersApplied}
+    />
+  );
+}
+
+export default async function DocumentsPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Navbar />
-      <DocumentsExplorerView
-        documents={documents}
-        hasFiltersApplied={hasFiltersApplied}
-      />
+      <Suspense
+        key={JSON.stringify(resolvedParams)}
+        fallback={
+          <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <div className="flex flex-col lg:flex-row items-start gap-8">
+              <div className="w-full lg:w-72 xl:w-80 shrink-0 h-96 bg-white rounded-2xl border border-gray-200 animate-pulse" />
+              <div className="flex-1 w-full min-w-0">
+                <DocumentGridSkeleton count={6} />
+              </div>
+            </div>
+          </main>
+        }
+      >
+        <DocumentsContent searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }
