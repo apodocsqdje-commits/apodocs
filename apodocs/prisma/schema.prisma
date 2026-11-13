@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DocType {
+  COURSE
+  EXAM
+  TD_TP
+  SUMMARY
+}
+
+enum DocStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Faculty {
+  id          String       @id @default(uuid())
+  name        String
+  acronym     String
+  departments Department[]
+}
+
+model Department {
+  id        String    @id @default(uuid())
+  name      String
+  facultyId String
+  faculty   Faculty   @relation(fields: [facultyId], references: [id])
+  subjects  Subject[]
+}
+
+model Subject {
+  id           String     @id @default(uuid())
+  name         String
+  semester     Int
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  documents    Document[]
+}
+
+model Document {
+  id         String    @id @default(uuid())
+  title      String
+  type       DocType
+  fileUrl    String
+  fileHash   String?
+  likes      Int       @default(0)
+  status     DocStatus @default(PENDING)
+  realName      String
+  authorName    String?
+  uploaderToken String?
+  subjectId     String
+  subject    Subject   @relation(fields: [subjectId], references: [id])
+  createdAt  DateTime
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // Store hashed passwords
+  role      String   @default("MODERATOR") // "SUPER_ADMIN" or "MODERATOR"
+  createdAt DateTime @default(now())
+}

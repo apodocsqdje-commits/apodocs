@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ump-blue: #004b87;
+  --color-ump-dark: #0f172a;
+  --color-ump-gray: #f8fafc;
+  --color-ump-accent: #eab308;
+}
+
+/* Hide Next.js development overlay badge (the circle with 'N') */
+[data-nextjs-dev-indicator],
+[data-nextjs-toast],
+nextjs-portal {
+  display: none !important;
+}
+
