@@ -28,8 +28,6 @@ import {
   BookOpen,
 } from "lucide-react";
 
-export const instant = false;
-
 export const metadata = {
   title: "Tableau de Bord Administration | ApoDocs Nador",
   description: "Panneau d'administration sécurisé RBAC (SUPER_ADMIN / MODERATOR) pour ApoDocs Nador.",
@@ -54,6 +52,8 @@ function formatRelativeTime(date: Date | string): string {
     return "Récemment";
   }
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const session = await getSession();

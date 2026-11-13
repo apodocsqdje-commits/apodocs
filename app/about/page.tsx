@@ -19,8 +19,6 @@ import {
   Heart,
 } from "lucide-react";
 
-export const instant = false;
-
 export const metadata = {
   title: "À Propos & Mission | ApoDocs Nador",
   description:

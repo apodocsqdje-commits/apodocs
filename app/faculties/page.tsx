@@ -20,7 +20,7 @@ import {
   Award,
 } from "lucide-react";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Facultés & Portails Officiels | ApoDocs Nador",

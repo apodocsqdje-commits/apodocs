@@ -64,7 +64,9 @@ interface DocumentViewerPageProps {
   params: PageParams;
 }
 
-export const instant = false;
+
+
+export const dynamic = "force-dynamic";
 
 export default async function DocumentViewerPage({ params }: DocumentViewerPageProps) {
   const { id } = await params;

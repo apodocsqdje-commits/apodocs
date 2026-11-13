@@ -16,7 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-export const instant = false;
+
 
 export const metadata = {
   title: "Gestion des Modérateurs | ApoDocs Admin",
@@ -34,6 +34,8 @@ function formatAdminDate(date: Date): string {
     return "N/A";
   }
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function ManageAdminsPage() {
   const session = await getSession();

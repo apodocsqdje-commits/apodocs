@@ -76,7 +76,7 @@ interface PageProps {
   searchParams: SearchParamsPromise;
 }
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function DocumentsPage({ searchParams }: PageProps) {
   // Step 2: Accept searchParams as a prop (Next.js 15+ Promise)

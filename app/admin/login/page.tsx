@@ -5,12 +5,14 @@ import Navbar from "@/components/Navbar";
 import { ShieldCheck, GraduationCap, LockKeyhole } from "lucide-react";
 
 
-export const instant = false;
+
 
 export const metadata = {
   title: "Connexion Administration | ApoDocs",
   description: "Espace sécurisé réservé aux administrateurs et modérateurs ApoDocs Nador.",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminLoginPage() {
   const session = await getSession();

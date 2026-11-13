@@ -5,7 +5,7 @@ import DocumentCard from "@/components/DocumentCard";
 import { prisma } from "@/lib/prisma";
 import { Sparkles, ArrowRight, FolderSearch } from "lucide-react";
 
-export const instant = false;
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   // Fetch total count of approved documents
