@@ -38,23 +38,37 @@ export async function loginAdmin(
       };
     }
 
-    // Auto-seed utility: Automatically create default SUPER_ADMIN if no admin exists in the database
-    const adminCount = await prisma.admin.count();
-    if (adminCount === 0) {
-      const defaultHashedPassword = await bcrypt.hash("admin123", 10);
-      await prisma.admin.create({
-        data: {
-          username: "admin",
-          password: defaultHashedPassword,
-          role: "SUPER_ADMIN",
-        },
-      });
-    }
-
-    // Find the Admin in the database
-    const admin = await prisma.admin.findUnique({
+    // Find the Admin in the database with strict field selection
+    let admin = await prisma.admin.findUnique({
       where: { username },
+      select: {
+        id: true,
+        username: true,
+        password: true,
+        role: true,
+      },
     });
+
+    // Auto-seed fallback: Only run count check if default admin is attempted and not found
+    if (!admin && username === "admin") {
+      const adminCount = await prisma.admin.count();
+      if (adminCount === 0) {
+        const defaultHashedPassword = await bcrypt.hash("admin123", 10);
+        admin = await prisma.admin.create({
+          data: {
+            username: "admin",
+            password: defaultHashedPassword,
+            role: "SUPER_ADMIN",
+          },
+          select: {
+            id: true,
+            username: true,
+            password: true,
+            role: true,
+          },
+        });
+      }
+    }
 
     if (!admin) {
       return {

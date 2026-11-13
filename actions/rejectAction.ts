@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export type RejectActionResult = {
   success: boolean;
@@ -13,6 +13,7 @@ export type RejectActionResult = {
 /**
  * Server Action: Rejects a document.
  * Authorized for both SUPER_ADMIN and MODERATOR roles.
+ * Optimized with narrow field selection and cache revalidation.
  */
 export async function rejectDocument(
   documentId: string
@@ -41,15 +42,23 @@ export async function rejectDocument(
       };
     }
 
-    // Update document status in the database to REJECTED
+    // Update document status with minimal payload selection
     const updatedDoc = await prisma.document.update({
       where: { id: documentId },
       data: { status: "REJECTED" },
+      select: { id: true, title: true },
     });
 
-    // Revalidate paths to update cache
-    revalidatePath("/admin");
-    revalidatePath("/documents");
+    // Revalidate paths and cache tags
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+      revalidatePath("/documents");
+      revalidatePath("/faculties");
+      revalidateTag("documents", "default");
+    } catch {
+      // Ignore cache context warning
+    }
 
     return {
       success: true,

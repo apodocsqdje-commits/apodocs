@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { documentCardSelect } from "@/lib/cachedData";
 
 export async function getMyUploadsByToken(token: string) {
   try {
@@ -15,17 +16,7 @@ export async function getMyUploadsByToken(token: string) {
       orderBy: {
         createdAt: "desc",
       },
-      include: {
-        subject: {
-          include: {
-            department: {
-              include: {
-                faculty: true,
-              },
-            },
-          },
-        },
-      },
+      select: documentCardSelect,
     });
 
     return docs;
@@ -57,17 +48,7 @@ export async function getMyUploads(ids?: string[], token?: string) {
       orderBy: {
         createdAt: "desc",
       },
-      include: {
-        subject: {
-          include: {
-            department: {
-              include: {
-                faculty: true,
-              },
-            },
-          },
-        },
-      },
+      select: documentCardSelect,
     });
 
     return docs;

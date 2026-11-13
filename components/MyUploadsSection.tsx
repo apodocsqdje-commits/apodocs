@@ -7,12 +7,10 @@ import {
   UploadCloud,
   Clock,
   CheckCircle2,
-  FileText,
-  Eye,
   ChevronRight,
+  Eye,
 } from "lucide-react";
 import DocumentPreviewModal, { PreviewDocumentData } from "./DocumentPreviewModal";
-import LikeButton from "./LikeButton";
 
 export default function MyUploadsSection() {
   const [uploads, setUploads] = useState<any[]>([]);
@@ -80,7 +78,7 @@ export default function MyUploadsSection() {
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
                 <Clock className="w-3 h-3" />
                 <span>
-                  {pendingCount} {isRTL ? "قيد المراجعة" : "en attente"}
+                  {pendingCount} {t("myuploads.pending_filter", "en attente")}
                 </span>
               </span>
             )}
@@ -96,16 +94,12 @@ export default function MyUploadsSection() {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer self-start sm:self-auto shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition cursor-pointer self-start sm:self-auto shadow-2xs select-none"
         >
           <span>
             {isOpen
-              ? isRTL
-                ? "إخفاء القائمة"
-                : "Masquer la section"
-              : isRTL
-              ? "عرض وثائقي"
-              : "Afficher mes fichiers"}
+              ? t("myuploads.hide_list", "Masquer la section")
+              : t("myuploads.show_list", "Afficher mes fichiers")}
           </span>
           <ChevronRight
             className={`w-3.5 h-3.5 transition-transform ${
@@ -150,46 +144,41 @@ export default function MyUploadsSection() {
                   </div>
 
                   <h3
-                    className="font-bold text-gray-900 text-sm line-clamp-2 hover:text-blue-600 transition cursor-pointer"
-                    onClick={() =>
-                      setSelectedDoc({
-                        id: doc.id,
-                        title: doc.title,
-                        type: doc.type,
-                        fileUrl: doc.fileUrl,
-                        status: doc.status,
-                        authorName: doc.authorName,
-                        likes: doc.likes,
-                        createdAt: doc.createdAt,
-                        facultyAcronym: faculty?.acronym,
-                        departmentName: department?.name,
-                        subjectName: subject?.name,
-                        semester: subject?.semester,
-                      })
-                    }
+                    className="font-bold text-sm text-gray-900 line-clamp-2 mb-1"
+                    title={doc.title}
                   >
                     {doc.title}
                   </h3>
 
-                  <div className="mt-2 text-xs text-gray-500 space-y-1">
-                    <p className="truncate">
-                      <span className="font-semibold text-gray-700">{faculty?.acronym}</span> • {department?.name}
-                    </p>
-                    {subject && (
-                      <p className="text-blue-600 font-medium truncate">
-                        S{subject.semester} - {subject.name}
-                      </p>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2 flex-wrap">
+                    <span className="font-semibold text-gray-700">
+                      {faculty?.acronym || "UMP"}
+                    </span>
+                    {department?.name && (
+                      <>
+                        <span>•</span>
+                        <span className="truncate max-w-[120px]">{department.name}</span>
+                      </>
+                    )}
+                    {subject?.name && (
+                      <>
+                        <span>•</span>
+                        <span className="text-blue-600 truncate max-w-[120px]">
+                          {subject.name}
+                        </span>
+                      </>
                     )}
                   </div>
                 </div>
 
-                {/* Footer Actions */}
-                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                  <LikeButton documentId={doc.id} initialLikes={doc.likes || 0} size="sm" />
+                <div className="pt-2 border-t border-gray-100 flex items-center justify-between mt-2">
+                  <span className="text-[11px] text-gray-400">
+                    {new Date(doc.createdAt).toLocaleDateString()}
+                  </span>
 
                   <button
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
                       setSelectedDoc({
                         id: doc.id,
                         title: doc.title,
@@ -203,12 +192,12 @@ export default function MyUploadsSection() {
                         departmentName: department?.name,
                         subjectName: subject?.name,
                         semester: subject?.semester,
-                      })
-                    }
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+                      });
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 text-xs font-semibold border border-gray-200 transition cursor-pointer active:scale-95 select-none"
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>{t("card.quick_preview", "Aperçu rapide")}</span>
+                    <Eye className="w-3 h-3" />
+                    <span>{t("card.quick_preview", "Aperçu")}</span>
                   </button>
                 </div>
               </div>
@@ -217,7 +206,7 @@ export default function MyUploadsSection() {
         </div>
       )}
 
-      {/* Preview Lightbox */}
+      {/* Document Preview Modal */}
       <DocumentPreviewModal
         document={selectedDoc}
         isOpen={Boolean(selectedDoc)}

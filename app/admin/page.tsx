@@ -73,12 +73,29 @@ export default async function AdminDashboardPage() {
     orderBy: {
       createdAt: "desc",
     },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      fileUrl: true,
+      status: true,
+      realName: true,
+      authorName: true,
+      likes: true,
+      createdAt: true,
       subject: {
-        include: {
+        select: {
+          name: true,
+          semester: true,
           department: {
-            include: {
-              faculty: true,
+            select: {
+              name: true,
+              faculty: {
+                select: {
+                  name: true,
+                  acronym: true,
+                },
+              },
             },
           },
         },

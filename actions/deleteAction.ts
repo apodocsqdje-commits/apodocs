@@ -3,7 +3,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 // Configure Cloudinary using global environment variables
 if (process.env.CLOUDINARY_URL) {
@@ -133,14 +133,22 @@ export async function deleteDocument(
       console.log(`[Cloudinary Destroy] URL is not a Cloudinary resource or public_id could not be extracted: ${cloudinaryUrl}`);
     }
 
-    // Remove the record from the Prisma database
+    // Remove the record from the Prisma database with minimal payload selection
     await prisma.document.delete({
       where: { id },
+      select: { id: true },
     });
 
-    // Revalidate paths to refresh cached pages
-    revalidatePath("/admin");
-    revalidatePath("/documents");
+    // Revalidate paths and cache tags
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+      revalidatePath("/documents");
+      revalidatePath("/faculties");
+      revalidateTag("documents", "default");
+    } catch {
+      // Ignore cache context warning
+    }
 
     return {
       success: true,

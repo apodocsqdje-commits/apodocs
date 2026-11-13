@@ -40,4 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# IDE and agent skill links
+.claude/
+.windsurf/
+.agents/
+
 /lib/generated/prisma

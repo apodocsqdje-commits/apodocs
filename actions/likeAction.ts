@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 
 export type LikeActionResult = {
   success: boolean;
@@ -9,7 +10,7 @@ export type LikeActionResult = {
 };
 
 /**
- * Server Action: Increments or decrements the anonymous like count on a document.
+ * Server Action: Optimized atomic increment/decrement of document likes.
  */
 export async function toggleLikeDocument(
   documentId: string,
@@ -20,28 +21,35 @@ export async function toggleLikeDocument(
       return { success: false, likes: 0, error: "Identifiant de document manquant." };
     }
 
-    const doc = await prisma.document.findUnique({
-      where: { id: documentId },
-      select: { likes: true },
-    });
-
-    if (!doc) {
-      return { success: false, likes: 0, error: "Document introuvable." };
+    // If decrementing, guard against negative counts
+    if (decrement) {
+      const doc = await prisma.document.findUnique({
+        where: { id: documentId },
+        select: { likes: true },
+      });
+      if (!doc || doc.likes <= 0) {
+        return { success: true, likes: 0 };
+      }
     }
 
-    const newLikes = decrement ? Math.max(0, doc.likes - 1) : doc.likes + 1;
-
+    // Atomic increment/decrement in a single database roundtrip
     const updated = await prisma.document.update({
       where: { id: documentId },
       data: {
-        likes: newLikes,
+        likes: decrement ? { decrement: 1 } : { increment: 1 },
       },
       select: { likes: true },
     });
 
+    try {
+      revalidateTag("documents", "default");
+    } catch {
+      // Ignore cache tag error if outside request context
+    }
+
     return {
       success: true,
-      likes: updated.likes,
+      likes: Math.max(0, updated.likes),
     };
   } catch (error) {
     console.error("Erreur toggleLikeDocument:", error);

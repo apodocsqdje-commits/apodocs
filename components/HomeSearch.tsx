@@ -25,8 +25,8 @@ export default function HomeSearch() {
       onSubmit={handleSubmit}
       className="w-full max-w-2xl mx-auto relative group"
     >
-      <div className="flex items-center gap-2 p-1.5 sm:p-2 bg-white rounded-2xl border border-gray-200 shadow-md shadow-blue-900/5 hover:border-blue-300 transition-all focus-within:border-ump-blue focus-within:ring-4 focus-within:ring-blue-600/10">
-        <div className="px-3 text-gray-400 group-focus-within:text-ump-blue transition-colors">
+      <div className="flex items-center gap-2 p-1.5 sm:p-2 bg-white rounded-2xl border border-gray-200 shadow-md shadow-blue-900/5 hover:border-blue-300 transition-all focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/10">
+        <div className="px-3 text-gray-400 group-focus-within:text-blue-600 transition-colors">
           <Search className="w-5 h-5" />
         </div>
 
@@ -40,16 +40,16 @@ export default function HomeSearch() {
 
         <button
           type="submit"
-          className="px-5 sm:px-6 py-2.5 sm:py-3 bg-ump-blue hover:bg-blue-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2 shrink-0"
+          className="px-5 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2 shrink-0 select-none"
         >
           <span>{t("hero.search_btn", "Search")}</span>
         </button>
       </div>
 
-      {/* Suggested Quick Tags */}
+      {/* Suggested Quick Tags (Standard Academic format) */}
       <div className="mt-3 flex items-center justify-center flex-wrap gap-2 text-xs text-gray-500">
         <span className="font-medium text-gray-400">
-          {isRTL ? "شائع:" : "Suggestions :"}
+          {t("hero.suggestions", "Suggestions :")}
         </span>
         {[
           { label: "Python & IA", query: "Python" },
@@ -65,7 +65,7 @@ export default function HomeSearch() {
               setQuery(item.query);
               router.push(`/documents?search=${encodeURIComponent(item.query)}`);
             }}
-            className="px-2.5 py-1 rounded-full bg-white/80 border border-gray-200 text-gray-600 hover:text-ump-blue hover:border-blue-300 hover:bg-blue-50/50 transition cursor-pointer text-[11px] font-medium"
+            className="px-2.5 py-1 rounded-full bg-white/80 border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 transition cursor-pointer text-[11px] font-medium active:scale-95 select-none"
           >
             {item.label}
           </button>

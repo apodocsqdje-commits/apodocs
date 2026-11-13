@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { toggleLikeDocument } from "@/actions/likeAction";
+import { useI18n } from "@/lib/i18nContext";
 
 interface LikeButtonProps {
   documentId: string;
@@ -19,6 +20,7 @@ export default function LikeButton({
   size = "sm",
   showLabel = false,
 }: LikeButtonProps) {
+  const { t } = useI18n();
   const [likes, setLikes] = useState<number>(initialLikes);
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [isPending, setIsPending] = useState<boolean>(false);
@@ -83,8 +85,8 @@ export default function LikeButton({
       type="button"
       onClick={handleLike}
       disabled={isPending}
-      title={isLiked ? "Retirer votre j'aime" : "J'aime ce document"}
-      aria-label="Aimer le document"
+      title={isLiked ? t("card.liked_action", "Retirer votre j'aime") : t("card.like_action", "J'aime ce document")}
+      aria-label={isLiked ? t("card.liked_action", "Retirer votre j'aime") : t("card.like_action", "J'aime ce document")}
       className={`inline-flex items-center gap-1.5 rounded-full font-semibold transition-all duration-200 cursor-pointer select-none active:scale-90 ${
         isSmall
           ? "px-2.5 py-1 text-xs"
@@ -107,7 +109,7 @@ export default function LikeButton({
       <span className="font-bold tabular-nums">{likes}</span>
       {showLabel && (
         <span className="hidden sm:inline font-normal text-gray-500 text-xs">
-          {isLiked ? "Aimé" : "J'aime"}
+          {isLiked ? t("card.liked_badge", "Aimé") : t("card.like_action", "J'aime")}
         </span>
       )}
     </button>

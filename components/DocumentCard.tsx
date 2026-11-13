@@ -7,14 +7,8 @@ import {
   GraduationCap,
   Layers,
   FileCheck2,
-  FileText,
-  Calendar,
-  Building2,
-  FolderTree,
   User,
   Eye,
-  CheckCircle2,
-  ExternalLink,
 } from "lucide-react";
 import LikeButton from "./LikeButton";
 import DocumentPreviewModal, { PreviewDocumentData } from "./DocumentPreviewModal";
@@ -47,7 +41,17 @@ interface DocumentCardProps {
   compact?: boolean;
 }
 
-const docTypeConfigs: Record<string, { labelKey: string; defaultLabel: string; badgeBg: string; badgeText: string; badgeBorder: string; icon: any }> = {
+const docTypeConfigs: Record<
+  string,
+  {
+    labelKey: string;
+    defaultLabel: string;
+    badgeBg: string;
+    badgeText: string;
+    badgeBorder: string;
+    icon: typeof BookOpen;
+  }
+> = {
   COURSE: {
     labelKey: "type.course",
     defaultLabel: "Cours",
@@ -93,12 +97,6 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
   const department = document.subject?.department;
   const subject = document.subject;
 
-  const formattedDate = new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(document.createdAt));
-
   const isPdf = /\.pdf($|\?)/i.test(document.fileUrl);
 
   const previewData: PreviewDocumentData = {
@@ -118,7 +116,7 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-200/90 hover:border-blue-400 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group">
+      <div className="bg-white rounded-2xl border border-gray-200/90 hover:border-blue-400 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group relative">
         {/* Top Visual Thumbnail Area */}
         <div
           onClick={() => setIsPreviewOpen(true)}
@@ -135,9 +133,9 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
               {/* Page lines simulation */}
               <div className="space-y-1 py-1">
                 <div className="h-1.5 bg-gray-200 rounded-full w-4/5" />
-                <div className="h-1 bg-gray-150 rounded-full w-full" />
-                <div className="h-1 bg-gray-150 rounded-full w-5/6" />
-                <div className="h-1 bg-gray-150 rounded-full w-2/3" />
+                <div className="h-1 bg-gray-100 rounded-full w-full" />
+                <div className="h-1 bg-gray-100 rounded-full w-5/6" />
+                <div className="h-1 bg-gray-100 rounded-full w-2/3" />
               </div>
               {/* Mock footer stamp */}
               <div className="pt-1 border-t border-gray-100 flex items-center justify-between">
@@ -155,8 +153,8 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
             />
           )}
 
-          {/* Type Badge Floating on Top Left */}
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+          {/* Type Badge Floating on Top (Responsive LTR/RTL) */}
+          <div className="absolute top-2.5 ltr:left-2.5 rtl:right-2.5 z-10 flex items-center gap-1.5 pointer-events-none">
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-md bg-white/95 shadow-2xs border ${typeConfig.badgeBorder} ${typeConfig.badgeText}`}
             >
@@ -165,16 +163,18 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
             </span>
           </div>
 
-          {/* Like Heart Button Floating on Top Right */}
+          {/* Like Heart Button Floating on Top (Responsive LTR/RTL) */}
           <div
-            className="absolute top-2.5 right-2.5 z-10"
-            onClick={(e) => e.stopPropagation()}
+            className="absolute top-2.5 ltr:right-2.5 rtl:left-2.5 z-20 pointer-events-auto"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
           >
             <LikeButton documentId={document.id} initialLikes={document.likes || 0} size="sm" />
           </div>
 
-          {/* Hover Overlay Hint */}
-          <div className="absolute inset-0 bg-blue-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-semibold backdrop-blur-2xs">
+          {/* Hover Overlay Hint with pointer-events-none so it NEVER blocks clicks */}
+          <div className="absolute inset-0 bg-blue-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-semibold backdrop-blur-2xs pointer-events-none">
             <Eye className="w-4 h-4" />
             <span>{t("card.quick_preview", "Aperçu rapide")}</span>
           </div>
@@ -195,7 +195,7 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
               {subject?.semester && (
                 <>
                   <span>•</span>
-                  <span className="px-1.5 py-0.2 bg-blue-50 text-blue-700 font-bold text-[10px] rounded border border-blue-100">
+                  <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 font-bold text-[10px] rounded border border-blue-100">
                     S{subject.semester}
                   </span>
                 </>
@@ -204,12 +204,12 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
 
             {/* Document Title */}
             <h2 className="text-sm sm:text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug mb-2">
-              <Link href={`/documents/${document.id}`} title={document.title}>
+              <Link href={`/documents/${document.id}`} title={document.title} className="hover:underline">
                 {document.title}
               </Link>
             </h2>
 
-            {/* Subject/Module */}
+            {/* Subject/Module (Strict Academic French/Standard Name) */}
             {subject?.name && (
               <p className="text-xs font-semibold text-blue-700 truncate flex items-center gap-1 mb-3">
                 <BookOpen className="w-3.5 h-3.5 shrink-0" />
@@ -231,12 +231,12 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
               </span>
             </div>
 
-            {/* View Button */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* View / Preview Buttons */}
+            <div className="flex items-center gap-1.5 shrink-0 relative z-10">
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(true)}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 border border-gray-200 text-xs font-semibold transition cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 border border-gray-200 text-xs font-semibold transition cursor-pointer active:scale-95 select-none"
                 title={t("card.quick_preview", "Aperçu modal")}
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -245,7 +245,7 @@ export default function DocumentCard({ document, compact = false }: DocumentCard
 
               <Link
                 href={`/documents/${document.id}`}
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-2xs transition cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold shadow-2xs transition cursor-pointer active:scale-95 select-none"
                 title={t("card.details", "Consulter le document")}
               >
                 <span>{t("card.details", "Voir")}</span>

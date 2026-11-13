@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export type ApproveActionResult = {
   success: boolean;
@@ -13,12 +13,12 @@ export type ApproveActionResult = {
 /**
  * Server Action: Approves a pending document.
  * Authorized for both SUPER_ADMIN and MODERATOR roles.
+ * Optimized with narrow field selection and cache revalidation.
  */
 export async function approveDocument(
   documentId: string
 ): Promise<ApproveActionResult> {
   try {
-    // Step 6: Security Verification - Read session cookie first
     const session = await getSession();
 
     if (!session) {
@@ -42,15 +42,23 @@ export async function approveDocument(
       };
     }
 
-    // Update document status in the database
+    // Update document status with minimal payload selection
     const updatedDoc = await prisma.document.update({
       where: { id: documentId },
       data: { status: "APPROVED" },
+      select: { id: true, title: true },
     });
 
-    // Revalidate paths to update cache
-    revalidatePath("/admin");
-    revalidatePath("/documents");
+    // Revalidate paths and cache tags
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+      revalidatePath("/documents");
+      revalidatePath("/faculties");
+      revalidateTag("documents", "default");
+    } catch {
+      // Ignore cache context warning
+    }
 
     return {
       success: true,

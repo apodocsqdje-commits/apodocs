@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Language, translations } from "./translations";
+import { Language, dictionaries, getNestedTranslation } from "@/locales";
 
 interface I18nContextType {
   language: Language;
@@ -17,7 +17,6 @@ const STORAGE_KEY = "apodocs_lang";
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("fr");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     try {
@@ -26,13 +25,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
         setLanguageState(savedLang);
         applyDocumentAttributes(savedLang);
       } else {
-        // Default to Arabic or French
         applyDocumentAttributes("fr");
       }
     } catch {
       applyDocumentAttributes("fr");
     }
-    setMounted(true);
   }, []);
 
   const applyDocumentAttributes = (lang: Language) => {
@@ -54,11 +51,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: string, fallback?: string): string => {
-    const item = translations[key];
-    if (item && item[language]) {
-      return item[language];
-    }
-    return fallback || key;
+    const dict = dictionaries[language] || dictionaries.fr;
+    return getNestedTranslation(dict, key, fallback);
   };
 
   const dir: "rtl" | "ltr" = language === "ar" ? "rtl" : "ltr";
@@ -84,11 +78,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 export function useI18n(): I18nContextType {
   const context = useContext(I18nContext);
   if (!context) {
-    // Graceful fallback if called outside provider
     return {
       language: "fr",
       setLanguage: () => {},
-      t: (key: string, fallback?: string) => translations[key]?.fr || fallback || key,
+      t: (key: string, fallback?: string) => getNestedTranslation(dictionaries.fr, key, fallback),
       dir: "ltr",
       isRTL: false,
     };

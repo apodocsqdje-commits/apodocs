@@ -21,10 +21,7 @@ import {
   ShieldCheck,
   Search,
   ExternalLink,
-  BookOpen,
   Calendar,
-  Layers,
-  GraduationCap,
   Copy,
   Check,
 } from "lucide-react";
@@ -108,16 +105,16 @@ export default function MyUploadsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Navbar />
 
       <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         {/* Top Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold mb-2 shadow-2xs">
               <UploadCloud className="w-3.5 h-3.5 text-blue-600" />
-              <span>{isRTL ? "تتبع الوثائق بدون حساب" : "Suivi Anonyme sans Compte"}</span>
+              <span>{t("myuploads.anonymous_badge", "Suivi Anonyme sans Compte")}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
               {t("myuploads.title", "Mes Documents Déposés")}
@@ -135,19 +132,19 @@ export default function MyUploadsPage() {
             <button
               onClick={() => fetchUploads(true)}
               disabled={refreshing}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 shadow-2xs transition cursor-pointer disabled:opacity-50"
-              title={isRTL ? "تحديث القائمة" : "Actualiser"}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-2xs transition cursor-pointer disabled:opacity-50 select-none"
+              title={t("myuploads.refresh", "Actualiser")}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-              <span>{isRTL ? "تحديث" : "Actualiser"}</span>
+              <span>{t("myuploads.refresh", "Actualiser")}</span>
             </button>
 
             <Link
               href="/upload"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 shadow-xs transition"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 active:bg-blue-800 shadow-xs transition cursor-pointer select-none"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>{isRTL ? "رفع مستند جديد" : "Déposer un fichier"}</span>
+              <span>{t("myuploads.upload_new", "Déposer un fichier")}</span>
             </Link>
           </div>
         </div>
@@ -156,7 +153,7 @@ export default function MyUploadsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs">
             <div className="flex items-center justify-between text-gray-500 mb-1">
-              <span className="text-xs font-medium">{isRTL ? "إجمالي المرفوعات" : "Total Dépôts"}</span>
+              <span className="text-xs font-medium">{t("myuploads.all_filter", "Total Dépôts")}</span>
               <FileText className="w-4 h-4 text-gray-400" />
             </div>
             <div className="text-2xl font-bold text-gray-900">{totalCount}</div>
@@ -164,7 +161,7 @@ export default function MyUploadsPage() {
 
           <div className="bg-white rounded-xl border border-amber-200 p-4 bg-gradient-to-br from-amber-50/50 to-white shadow-2xs">
             <div className="flex items-center justify-between text-amber-700 mb-1">
-              <span className="text-xs font-medium">{isRTL ? "قيد المراجعة" : "En Attente"}</span>
+              <span className="text-xs font-medium">{t("myuploads.pending_filter", "En Attente")}</span>
               <Clock className="w-4 h-4 text-amber-500" />
             </div>
             <div className="text-2xl font-bold text-amber-900">{pendingCount}</div>
@@ -172,7 +169,7 @@ export default function MyUploadsPage() {
 
           <div className="bg-white rounded-xl border border-emerald-200 p-4 bg-gradient-to-br from-emerald-50/50 to-white shadow-2xs">
             <div className="flex items-center justify-between text-emerald-700 mb-1">
-              <span className="text-xs font-medium">{isRTL ? "معتمد ومنشور" : "Validés & Publics"}</span>
+              <span className="text-xs font-medium">{t("myuploads.approved_filter", "Validés & Publics")}</span>
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             </div>
             <div className="text-2xl font-bold text-emerald-900">{approvedCount}</div>
@@ -181,7 +178,7 @@ export default function MyUploadsPage() {
           {rejectedCount > 0 ? (
             <div className="bg-white rounded-xl border border-rose-200 p-4 bg-gradient-to-br from-rose-50/50 to-white shadow-2xs">
               <div className="flex items-center justify-between text-rose-700 mb-1">
-                <span className="text-xs font-medium">{isRTL ? "مرفوض" : "Rejetés"}</span>
+                <span className="text-xs font-medium">{t("myuploads.rejected_filter", "Rejetés")}</span>
                 <XCircle className="w-4 h-4 text-rose-500" />
               </div>
               <div className="text-2xl font-bold text-rose-900">{rejectedCount}</div>
@@ -189,7 +186,7 @@ export default function MyUploadsPage() {
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-gray-500 mb-1">
-                <span className="text-xs font-medium">{isRTL ? "معرف المتصفح" : "Clé Navigateur"}</span>
+                <span className="text-xs font-medium">{t("myuploads.anonymous_badge", "Clé Navigateur")}</span>
                 <ShieldCheck className="w-4 h-4 text-blue-500" />
               </div>
               <div className="flex items-center gap-1.5 text-xs text-gray-500 truncate font-mono">
@@ -198,7 +195,7 @@ export default function MyUploadsPage() {
                   <button
                     onClick={handleCopyToken}
                     className="p-1 hover:text-gray-900 text-gray-400 cursor-pointer"
-                    title={isRTL ? "نسخ رمز التتبع" : "Copier le jeton"}
+                    title="Copier le jeton"
                   >
                     {copiedToken ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
@@ -214,57 +211,63 @@ export default function MyUploadsPage() {
           <div className="flex items-center gap-1 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
             <button
               onClick={() => setFilterStatus("ALL")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 select-none ${
                 filterStatus === "ALL"
                   ? "bg-blue-600 text-white shadow-2xs"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              {isRTL ? "الكل" : "Tous"} ({totalCount})
+              {t("myuploads.all_filter", "Tous")} ({totalCount})
             </button>
             <button
               onClick={() => setFilterStatus("PENDING")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 select-none ${
                 filterStatus === "PENDING"
                   ? "bg-amber-600 text-white shadow-2xs"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              {isRTL ? "قيد المراجعة" : "En attente"} ({pendingCount})
+              {t("myuploads.pending_filter", "En attente")} ({pendingCount})
             </button>
             <button
               onClick={() => setFilterStatus("APPROVED")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 select-none ${
                 filterStatus === "APPROVED"
                   ? "bg-emerald-600 text-white shadow-2xs"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
-              {isRTL ? "معتمد" : "Validés"} ({approvedCount})
+              {t("myuploads.approved_filter", "Validés")} ({approvedCount})
             </button>
             {rejectedCount > 0 && (
               <button
                 onClick={() => setFilterStatus("REJECTED")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 select-none ${
                   filterStatus === "REJECTED"
                     ? "bg-rose-600 text-white shadow-2xs"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                {isRTL ? "مرفوض" : "Rejetés"} ({rejectedCount})
+                {t("myuploads.rejected_filter", "Rejetés")} ({rejectedCount})
               </button>
             )}
           </div>
 
           {/* Search Box */}
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search
+              className={`w-3.5 h-3.5 absolute ${
+                isRTL ? "right-3" : "left-3"
+              } top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none`}
+            />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isRTL ? "بحث في مرفوعاتك..." : "Rechercher dans mes dépôts..."}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+              placeholder={t("myuploads.search_placeholder", "Rechercher dans mes dépôts...")}
+              className={`w-full ${
+                isRTL ? "pr-9 pl-3" : "pl-9 pr-3"
+              } py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition`}
             />
           </div>
         </div>
@@ -293,29 +296,21 @@ export default function MyUploadsPage() {
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-1">
               {uploads.length === 0
-                ? isRTL
-                  ? "لا توجد مستندات مرفوعة من هذا المتصفح"
-                  : "Aucun document téléversé depuis ce navigateur"
-                : isRTL
-                ? "لا توجد نتائج تطابق بحثك"
-                : "Aucun résultat trouvé"}
+                ? t("myuploads.empty_title", "Aucun document partagé pour le moment")
+                : t("documents.no_results_title", "Aucun résultat trouvé")}
             </h3>
             <p className="text-xs text-gray-500 max-w-md mx-auto mb-6">
               {uploads.length === 0
-                ? isRTL
-                  ? "يتم تتبع أي ملف ترفعه تلقائياً عبر معرف متصفحك الفريد دون الحاجة لتسجيل حساب. يمكنك البدء بمشاركة أول مستند الآن!"
-                  : "Chaque document déposé est automatiquement associé à votre navigateur. Vous pourrez suivre sa validation en temps réel ici."
-                : isRTL
-                ? "جرب تغيير فلاتر الحالة أو مسح خانة البحث."
-                : "Essayez de modifier vos filtres ou termes de recherche."}
+                ? t("myuploads.empty_desc", "Chaque document déposé est automatiquement associé à votre navigateur. Vous pourrez suivre sa validation en temps réel ici.")
+                : t("documents.no_results_desc", "Essayez de modifier vos filtres ou termes de recherche.")}
             </p>
             {uploads.length === 0 && (
               <Link
                 href="/upload"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition shadow-xs"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition shadow-xs cursor-pointer select-none"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>{isRTL ? "مشاركة أول ملف الآن" : "Déposer mon premier document"}</span>
+                <span>{t("myuploads.start_upload", "Déposer mon premier document")}</span>
               </Link>
             )}
           </div>
@@ -352,7 +347,7 @@ export default function MyUploadsPage() {
                       {isRejected && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
                           <XCircle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
-                          <span>{isRTL ? "مرفوض" : "Rejeté"}</span>
+                          <span>{t("myuploads.rejected", "Rejeté")}</span>
                         </span>
                       )}
 
@@ -435,8 +430,8 @@ export default function MyUploadsPage() {
                           href={doc.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1 text-gray-400 hover:text-gray-700 transition"
-                          title={isRTL ? "فتح الملف" : "Ouvrir"}
+                          className="p-1 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                          title={t("card.direct_link", "Ouvrir")}
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>

@@ -18,8 +18,13 @@ export default function DeleteButton({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    // Step 6: Confirmation dialog
-    if (!window.confirm("Are you sure?")) {
+    if (
+      !window.confirm(
+        `Confirmer la suppression définitive du document ${
+          documentTitle ? `"${documentTitle}"` : ""
+        } ? Cette action est irréversible.`
+      )
+    ) {
       return;
     }
 
@@ -42,7 +47,7 @@ export default function DeleteButton({
       type="button"
       onClick={handleDelete}
       disabled={isDeleting}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 active:bg-red-200/80 border border-red-200 rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 active:bg-red-200/80 border border-red-200 rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 cursor-pointer select-none"
       title={documentTitle ? `Supprimer "${documentTitle}"` : "Supprimer ce document"}
       aria-label="Supprimer le document"
     >

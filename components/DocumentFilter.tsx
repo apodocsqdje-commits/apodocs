@@ -26,9 +26,9 @@ export default function DocumentFilter() {
 
   const documentTypeOptions = [
     { value: "", label: t("filter.all_types", "Tous les types") },
-    { value: "COURSE", label: t("type.course", "Cours / Lecture Notes") },
+    { value: "COURSE", label: t("type.course", "Cours / Notes") },
     { value: "EXAM", label: t("type.exam", "Examens / Past Papers") },
-    { value: "TD_TP", label: t("type.td_tp", "TD / TP / Lab Exercises") },
+    { value: "TD_TP", label: t("type.td_tp", "TD / TP / Travaux") },
     { value: "SUMMARY", label: t("type.summary", "Résumés / Cheatsheets") },
   ];
 
@@ -151,13 +151,13 @@ export default function DocumentFilter() {
         <button
           type="button"
           onClick={() => setIsMobileOpen((prev) => !prev)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 shadow-xs cursor-pointer"
+          className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 shadow-2xs active:bg-gray-50 transition cursor-pointer select-none"
         >
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-ump-blue" />
+            <SlidersHorizontal className="w-4 h-4 text-blue-600" />
             <span>{t("filter.title", "Filtres")}</span>
             {hasActiveFilters && (
-              <span className="w-2 h-2 rounded-full bg-ump-blue" />
+              <span className="w-2 h-2 rounded-full bg-blue-600" />
             )}
           </div>
           <ChevronDown
@@ -176,8 +176,8 @@ export default function DocumentFilter() {
       >
         {/* Header with Reset button */}
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
-          <div className="flex items-center gap-2 text-ump-dark font-bold text-sm">
-            <Filter className="w-4 h-4 text-ump-blue" />
+          <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
+            <Filter className="w-4 h-4 text-blue-600" />
             <span>{t("filter.title", "Filtres")}</span>
           </div>
 
@@ -210,15 +210,23 @@ export default function DocumentFilter() {
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setSearchInput(e.target.value)
                 }
-                placeholder="Ex: Microéconomie, Algèbre..."
-                className="w-full px-8 py-2 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 placeholder-gray-400 outline-none transition focus:border-ump-blue focus:ring-2 focus:ring-blue-600/20"
+                placeholder={t("filter.search_placeholder", "Ex: Microéconomie, Algèbre...")}
+                className={`w-full ${
+                  isRTL ? "pr-8 pl-8" : "pl-8 pr-8"
+                } py-2 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 placeholder-gray-400 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20`}
               />
-              <Search className={`w-4 h-4 text-gray-400 absolute ${isRTL ? "right-2.5" : "left-2.5"} top-2.5 pointer-events-none`} />
+              <Search
+                className={`w-4 h-4 text-gray-400 absolute ${
+                  isRTL ? "right-2.5" : "left-2.5"
+                } top-2.5 pointer-events-none`}
+              />
               {searchInput && (
                 <button
                   type="button"
                   onClick={() => setSearchInput("")}
-                  className={`absolute ${isRTL ? "left-2.5" : "right-2.5"} top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer`}
+                  className={`absolute ${
+                    isRTL ? "left-2.5" : "right-2.5"
+                  } top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer`}
                   aria-label="Effacer recherche"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -240,7 +248,9 @@ export default function DocumentFilter() {
                 id="filter-type"
                 value={currentType}
                 onChange={(e) => handleTypeChange(e.target.value)}
-                className="w-full appearance-none px-3 py-2 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 outline-none transition focus:border-ump-blue focus:ring-2 focus:ring-blue-600/20 cursor-pointer font-medium"
+                className={`w-full appearance-none ${
+                  isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
+                } py-2 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer font-medium`}
               >
                 {documentTypeOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -248,13 +258,17 @@ export default function DocumentFilter() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 absolute ${isRTL ? "left-2.5" : "right-2.5"} top-3 pointer-events-none`} />
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-gray-400 absolute ${
+                  isRTL ? "left-2.5" : "right-2.5"
+                } top-3 pointer-events-none`}
+              />
             </div>
           </div>
 
           <div className="border-t border-gray-100 pt-3 space-y-3">
             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
-              {t("upload.academic_hierarchy", "Parcours académique")}
+              {t("filter.academic_hierarchy", "Parcours académique")}
             </span>
 
             {/* 3. Faculty Dropdown */}
@@ -263,7 +277,7 @@ export default function DocumentFilter() {
                 htmlFor="filter-faculty"
                 className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5"
               >
-                <Building2 className="w-3.5 h-3.5 text-ump-blue" />
+                <Building2 className="w-3.5 h-3.5 text-blue-600" />
                 <span>{t("filter.faculty", "Faculté")}</span>
               </label>
               <div className="relative">
@@ -271,7 +285,9 @@ export default function DocumentFilter() {
                   id="filter-faculty"
                   value={currentFaculty}
                   onChange={(e) => handleFacultyChange(e.target.value)}
-                  className="w-full appearance-none px-3 py-2 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 outline-none transition focus:border-ump-blue focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
+                  className={`w-full appearance-none ${
+                    isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
+                  } py-2 rounded-lg border border-gray-300 bg-white text-xs text-gray-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer`}
                 >
                   <option value="">{t("filter.all_faculties", "Toutes les facultés")}</option>
                   {NADOR_FACULTIES.map((fac) => (
@@ -280,7 +296,11 @@ export default function DocumentFilter() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 absolute ${isRTL ? "left-2.5" : "right-2.5"} top-3 pointer-events-none`} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-gray-400 absolute ${
+                    isRTL ? "left-2.5" : "right-2.5"
+                  } top-3 pointer-events-none`}
+                />
               </div>
             </div>
 
@@ -290,7 +310,7 @@ export default function DocumentFilter() {
                 htmlFor="filter-filiere"
                 className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5"
               >
-                <FolderTree className="w-3.5 h-3.5 text-ump-blue" />
+                <FolderTree className="w-3.5 h-3.5 text-blue-600" />
                 <span>{t("filter.filiere", "Filière")}</span>
               </label>
               <div className="relative">
@@ -299,10 +319,12 @@ export default function DocumentFilter() {
                   value={currentFiliere}
                   onChange={(e) => handleFiliereChange(e.target.value)}
                   disabled={!currentFaculty}
-                  className={`w-full appearance-none px-3 py-2 rounded-lg border text-xs outline-none transition ${
+                  className={`w-full appearance-none ${
+                    isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
+                  } py-2 rounded-lg border text-xs outline-none transition ${
                     !currentFaculty
                       ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-white border-gray-300 text-gray-900 focus:border-ump-blue focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
                   }`}
                 >
                   <option value="">
@@ -316,7 +338,11 @@ export default function DocumentFilter() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 absolute ${isRTL ? "left-2.5" : "right-2.5"} top-3 pointer-events-none`} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-gray-400 absolute ${
+                    isRTL ? "left-2.5" : "right-2.5"
+                  } top-3 pointer-events-none`}
+                />
               </div>
             </div>
 
@@ -326,7 +352,7 @@ export default function DocumentFilter() {
                 htmlFor="filter-semester"
                 className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5"
               >
-                <Calendar className="w-3.5 h-3.5 text-ump-blue" />
+                <Calendar className="w-3.5 h-3.5 text-blue-600" />
                 <span>{t("filter.semester", "Semestre")}</span>
               </label>
               <div className="relative">
@@ -335,10 +361,12 @@ export default function DocumentFilter() {
                   value={currentSemester}
                   onChange={(e) => handleSemesterChange(e.target.value)}
                   disabled={!currentFiliere}
-                  className={`w-full appearance-none px-3 py-2 rounded-lg border text-xs outline-none transition ${
+                  className={`w-full appearance-none ${
+                    isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
+                  } py-2 rounded-lg border text-xs outline-none transition ${
                     !currentFiliere
                       ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-white border-gray-300 text-gray-900 focus:border-ump-blue focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
                   }`}
                 >
                   <option value="">
@@ -352,7 +380,11 @@ export default function DocumentFilter() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 absolute ${isRTL ? "left-2.5" : "right-2.5"} top-3 pointer-events-none`} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-gray-400 absolute ${
+                    isRTL ? "left-2.5" : "right-2.5"
+                  } top-3 pointer-events-none`}
+                />
               </div>
             </div>
 
@@ -362,7 +394,7 @@ export default function DocumentFilter() {
                 htmlFor="filter-module"
                 className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5"
               >
-                <BookOpen className="w-3.5 h-3.5 text-ump-blue" />
+                <BookOpen className="w-3.5 h-3.5 text-blue-600" />
                 <span>{t("filter.module", "Module / Matière")}</span>
               </label>
               <div className="relative">
@@ -371,10 +403,12 @@ export default function DocumentFilter() {
                   value={currentModule}
                   onChange={(e) => handleModuleChange(e.target.value)}
                   disabled={!currentSemester}
-                  className={`w-full appearance-none px-3 py-2 rounded-lg border text-xs outline-none transition ${
+                  className={`w-full appearance-none ${
+                    isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
+                  } py-2 rounded-lg border text-xs outline-none transition ${
                     !currentSemester
                       ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-white border-gray-300 text-gray-900 focus:border-ump-blue focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
+                      : "bg-white border-gray-300 text-gray-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
                   }`}
                 >
                   <option value="">
@@ -388,16 +422,20 @@ export default function DocumentFilter() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className={`w-3.5 h-3.5 text-gray-400 absolute ${isRTL ? "left-2.5" : "right-2.5"} top-3 pointer-events-none`} />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-gray-400 absolute ${
+                    isRTL ? "left-2.5" : "right-2.5"
+                  } top-3 pointer-events-none`}
+                />
               </div>
             </div>
           </div>
 
           {/* Pending indicator */}
           {isPending && (
-            <div className="pt-2 flex items-center justify-center gap-2 text-xs text-ump-blue">
-              <span className="w-2 h-2 rounded-full bg-ump-blue animate-pulse" />
-              <span>{isRTL ? "جاري تحديث النتائج..." : "Mise à jour des résultats..."}</span>
+            <div className="pt-2 flex items-center justify-center gap-2 text-xs text-blue-600">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+              <span>{t("filter.updating", "Mise à jour des résultats...")}</span>
             </div>
           )}
         </div>

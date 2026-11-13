@@ -3,7 +3,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 // Configure Cloudinary using global environment variables
 if (process.env.CLOUDINARY_URL) {
@@ -84,8 +84,15 @@ export async function bulkApproveDocuments(
       },
     });
 
-    revalidatePath("/admin");
-    revalidatePath("/documents");
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+      revalidatePath("/documents");
+      revalidatePath("/faculties");
+      revalidateTag("documents", "default");
+    } catch {
+      // Ignore cache context warning
+    }
 
     return {
       success: true,
@@ -134,8 +141,15 @@ export async function bulkRejectDocuments(
       },
     });
 
-    revalidatePath("/admin");
-    revalidatePath("/documents");
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+      revalidatePath("/documents");
+      revalidatePath("/faculties");
+      revalidateTag("documents", "default");
+    } catch {
+      // Ignore cache context warning
+    }
 
     return {
       success: true,
@@ -210,8 +224,15 @@ export async function bulkDeleteDocuments(
       },
     });
 
-    revalidatePath("/admin");
-    revalidatePath("/documents");
+    try {
+      revalidatePath("/");
+      revalidatePath("/admin");
+      revalidatePath("/documents");
+      revalidatePath("/faculties");
+      revalidateTag("documents", "default");
+    } catch {
+      // Ignore cache context warning
+    }
 
     return {
       success: true,

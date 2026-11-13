@@ -7,10 +7,22 @@
   --color-ump-accent: #eab308;
 }
 
+.font-arabic {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+/* Ensure smooth interactive button feedback and prevent tap delay on touch devices */
+button,
+a,
+input,
+select {
+  touch-action: manipulation;
+}
+
 /* Hide Next.js development overlay badge (the circle with 'N') */
 [data-nextjs-dev-indicator],
 [data-nextjs-toast],
 nextjs-portal {
   display: none !important;
 }
-

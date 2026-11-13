@@ -54,9 +54,10 @@ export async function createModeratorAccount(
       };
     }
 
-    // Check if username is already taken
+    // Check if username is already taken with lightweight select
     const existing = await prisma.admin.findUnique({
       where: { username },
+      select: { id: true },
     });
 
     if (existing) {
@@ -138,6 +139,7 @@ export async function revokeAdminAccess(
 
     const targetAdmin = await prisma.admin.findUnique({
       where: { id: adminId },
+      select: { id: true, username: true, role: true },
     });
 
     if (!targetAdmin) {
