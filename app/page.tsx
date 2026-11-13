@@ -8,31 +8,36 @@ import { Sparkles, ArrowRight, FolderSearch } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  // Fetch total count of approved documents
-  const totalCount = await prisma.document.count({
-    where: { status: "APPROVED" },
-  });
+  let totalCount = 0;
+  let featuredDocuments: any[] = [];
 
-  // Fetch featured / top liked / recent approved documents
-  const featuredDocuments = await prisma.document.findMany({
-    where: { status: "APPROVED" },
-    orderBy: [
-      { likes: "desc" },
-      { createdAt: "desc" },
-    ],
-    take: 6,
-    include: {
-      subject: {
-        include: {
-          department: {
-            include: {
-              faculty: true,
+  try {
+    totalCount = await prisma.document.count({
+      where: { status: "APPROVED" },
+    });
+
+    featuredDocuments = await prisma.document.findMany({
+      where: { status: "APPROVED" },
+      orderBy: [
+        { likes: "desc" },
+        { createdAt: "desc" },
+      ],
+      take: 6,
+      include: {
+        subject: {
+          include: {
+            department: {
+              include: {
+                faculty: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Database connection error on Home page:", error);
+  }
 
   return (
     <div className="min-h-screen bg-ump-gray flex flex-col selection:bg-blue-100 selection:text-ump-blue">

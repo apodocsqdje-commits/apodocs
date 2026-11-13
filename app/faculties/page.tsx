@@ -132,18 +132,23 @@ export default async function FacultiesPage() {
   // Count approved documents per faculty from database
   const facultiesData = await Promise.all(
     NADOR_FACULTIES.map(async (faculty) => {
-      const docCount = await prisma.document.count({
-        where: {
-          status: "APPROVED",
-          subject: {
-            department: {
-              faculty: {
-                acronym: faculty.id,
+      let docCount = 0;
+      try {
+        docCount = await prisma.document.count({
+          where: {
+            status: "APPROVED",
+            subject: {
+              department: {
+                faculty: {
+                  acronym: faculty.id,
+                },
               },
             },
           },
-        },
-      });
+        });
+      } catch (err) {
+        console.error("Faculties count error:", err);
+      }
 
       const config = facultyDetails[faculty.id] || {
         id: faculty.id,

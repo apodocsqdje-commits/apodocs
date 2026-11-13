@@ -155,23 +155,28 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
   }
 
   // Query database
-  const documents = await prisma.document.findMany({
-    where,
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      subject: {
-        include: {
-          department: {
-            include: {
-              faculty: true,
+  let documents: any[] = [];
+  try {
+    documents = await prisma.document.findMany({
+      where,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        subject: {
+          include: {
+            department: {
+              include: {
+                faculty: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+  } catch (err) {
+    console.error("Documents query error:", err);
+  }
 
   const hasFiltersApplied = Boolean(
     search || faculty || filiere || semester || moduleName || docType
