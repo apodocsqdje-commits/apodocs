@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight, FolderSearch } from "lucide-react";
 import DocumentCard, { DocumentCardItem } from "./DocumentCard";
+import DocumentPreviewModal, { PreviewDocumentData } from "./DocumentPreviewModal";
 import { useI18n } from "@/lib/i18nContext";
 
 interface HomeFeaturedSectionProps {
@@ -15,6 +17,7 @@ export default function HomeFeaturedSection({
   totalCount,
 }: HomeFeaturedSectionProps) {
   const { t, isRTL } = useI18n();
+  const [previewDoc, setPreviewDoc] = useState<PreviewDocumentData | null>(null);
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 pt-10 border-t border-gray-200/80">
@@ -75,10 +78,21 @@ export default function HomeFeaturedSection({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {documents.map((doc) => (
-            <DocumentCard key={doc.id} document={doc} />
+            <DocumentCard
+              key={doc.id}
+              document={doc}
+              onPreview={setPreviewDoc}
+            />
           ))}
         </div>
       )}
+
+      {/* Instant Preview Modal */}
+      <DocumentPreviewModal
+        document={previewDoc}
+        isOpen={Boolean(previewDoc)}
+        onClose={() => setPreviewDoc(null)}
+      />
     </section>
   );
 }

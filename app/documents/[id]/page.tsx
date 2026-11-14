@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { documentCardSelect } from "@/lib/cachedData";
+import { unstable_cache } from "next/cache";
 import DocumentViewerHeader from "@/components/DocumentViewerHeader";
+import DocumentViewerBody from "@/components/DocumentViewerBody";
 
 type PageParams = Promise<{
   id: string;
@@ -13,6 +15,17 @@ interface DocumentViewerPageProps {
 
 export const dynamic = "force-dynamic";
 
+const getCachedDocumentById = (id: string) =>
+  unstable_cache(
+    async () =>
+      prisma.document.findUnique({
+        where: { id },
+        select: documentCardSelect,
+      }),
+    [`document-${id}`],
+    { revalidate: 60, tags: ["documents", `doc-${id}`] }
+  )();
+
 export default async function DocumentViewerPage({ params }: DocumentViewerPageProps) {
   const { id } = await params;
 
@@ -20,10 +33,7 @@ export default async function DocumentViewerPage({ params }: DocumentViewerPageP
     notFound();
   }
 
-  const document = await prisma.document.findUnique({
-    where: { id },
-    select: documentCardSelect,
-  });
+  const document = await getCachedDocumentById(id);
 
   if (!document) {
     notFound();
@@ -58,23 +68,11 @@ export default async function DocumentViewerPage({ params }: DocumentViewerPageP
         }}
       />
 
-      {/* Centered Viewer Body */}
-      <main className="flex-grow overflow-auto flex items-center justify-center bg-slate-200/50 p-3 sm:p-6 md:p-8">
-        {isImage ? (
-          <img
-            src={document.fileUrl}
-            alt={document.title}
-            className="w-auto h-auto max-w-[95%] sm:max-w-[70%] max-h-[85vh] object-contain shadow-md rounded-xl border border-gray-200 bg-white"
-          />
-        ) : (
-          <iframe
-            src={document.fileUrl}
-            className="w-full sm:w-[85%] max-w-4xl h-[85vh] bg-white shadow-md rounded-xl border border-gray-300"
-            title={document.title}
-            allow="fullscreen"
-          />
-        )}
-      </main>
+      <DocumentViewerBody
+        fileUrl={document.fileUrl}
+        title={document.title}
+        isImage={isImage}
+      />
     </div>
   );
 }

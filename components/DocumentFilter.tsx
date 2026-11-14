@@ -40,30 +40,40 @@ export default function DocumentFilter() {
   const currentModule = searchParams.get("module") || "";
   const currentType = searchParams.get("type") || "";
 
-  // Local state for immediate input feedback
+  // Local optimistic state for 0ms immediate feedback
   const [searchInput, setSearchInput] = useState(currentSearch);
+  const [selectedFaculty, setSelectedFaculty] = useState(currentFaculty);
+  const [selectedFiliere, setSelectedFiliere] = useState(currentFiliere);
+  const [selectedSemester, setSelectedSemester] = useState(currentSemester);
+  const [selectedModule, setSelectedModule] = useState(currentModule);
+  const [selectedType, setSelectedType] = useState(currentType);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Sync search input if URL changes externally
+  // Sync local state if URL changes externally (e.g. browser back/forward or global reset)
   useEffect(() => {
     setSearchInput(currentSearch);
-  }, [currentSearch]);
+    setSelectedFaculty(currentFaculty);
+    setSelectedFiliere(currentFiliere);
+    setSelectedSemester(currentSemester);
+    setSelectedModule(currentModule);
+    setSelectedType(currentType);
+  }, [currentSearch, currentFaculty, currentFiliere, currentSemester, currentModule, currentType]);
 
-  // Derived cascade options from NADOR_FACULTIES
+  // Derived cascade options calculated instantly from local state
   const selectedFacultyObj: Faculty | undefined = NADOR_FACULTIES.find(
-    (f) => f.id === currentFaculty
+    (f) => f.id === selectedFaculty
   );
   const availableFilieres: Filiere[] = selectedFacultyObj?.filieres || [];
   const selectedFiliereObj: Filiere | undefined = availableFilieres.find(
-    (fil) => fil.id === currentFiliere
+    (fil) => fil.id === selectedFiliere
   );
   const availableSemesters: Semester[] = selectedFiliereObj?.semesters || [];
   const selectedSemesterObj: Semester | undefined = availableSemesters.find(
-    (sem) => sem.id === currentSemester
+    (sem) => sem.id === selectedSemester
   );
   const availableModules: string[] = selectedSemesterObj?.modules || [];
 
-  // Helper to push URL updates
+  // Helper to push URL updates via startTransition
   const updateUrlFilters = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -94,8 +104,12 @@ export default function DocumentFilter() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // Cascading change handlers
+  // Instant Cascading Change Handlers (0ms response)
   const handleFacultyChange = (newFacultyId: string) => {
+    setSelectedFaculty(newFacultyId);
+    setSelectedFiliere("");
+    setSelectedSemester("");
+    setSelectedModule("");
     updateUrlFilters({
       faculty: newFacultyId || null,
       filiere: null,
@@ -105,6 +119,9 @@ export default function DocumentFilter() {
   };
 
   const handleFiliereChange = (newFiliereId: string) => {
+    setSelectedFiliere(newFiliereId);
+    setSelectedSemester("");
+    setSelectedModule("");
     updateUrlFilters({
       filiere: newFiliereId || null,
       semester: null,
@@ -113,6 +130,8 @@ export default function DocumentFilter() {
   };
 
   const handleSemesterChange = (newSemesterId: string) => {
+    setSelectedSemester(newSemesterId);
+    setSelectedModule("");
     updateUrlFilters({
       semester: newSemesterId || null,
       module: null,
@@ -120,12 +139,14 @@ export default function DocumentFilter() {
   };
 
   const handleModuleChange = (newModuleName: string) => {
+    setSelectedModule(newModuleName);
     updateUrlFilters({
       module: newModuleName || null,
     });
   };
 
   const handleTypeChange = (newType: string) => {
+    setSelectedType(newType);
     updateUrlFilters({
       type: newType || null,
     });
@@ -133,18 +154,23 @@ export default function DocumentFilter() {
 
   const handleResetFilters = () => {
     setSearchInput("");
+    setSelectedFaculty("");
+    setSelectedFiliere("");
+    setSelectedSemester("");
+    setSelectedModule("");
+    setSelectedType("");
     startTransition(() => {
       router.push(pathname, { scroll: false });
     });
   };
 
   const hasActiveFilters = Boolean(
-    currentSearch ||
-      currentFaculty ||
-      currentFiliere ||
-      currentSemester ||
-      currentModule ||
-      currentType
+    searchInput ||
+      selectedFaculty ||
+      selectedFiliere ||
+      selectedSemester ||
+      selectedModule ||
+      selectedType
   );
 
   return (
@@ -249,7 +275,7 @@ export default function DocumentFilter() {
             <div className="relative">
               <select
                 id="filter-type"
-                value={currentType}
+                value={selectedType}
                 onChange={(e) => handleTypeChange(e.target.value)}
                 className={`w-full appearance-none ${
                   isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
@@ -286,7 +312,7 @@ export default function DocumentFilter() {
               <div className="relative">
                 <select
                   id="filter-faculty"
-                  value={currentFaculty}
+                  value={selectedFaculty}
                   onChange={(e) => handleFacultyChange(e.target.value)}
                   className={`w-full appearance-none ${
                     isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
@@ -307,7 +333,7 @@ export default function DocumentFilter() {
               </div>
             </div>
 
-            {/* 4. Filière Dropdown */}
+            {/* 4. Filière Dropdown (Active immediately once Faculty is chosen) */}
             <div>
               <label
                 htmlFor="filter-filiere"
@@ -319,19 +345,19 @@ export default function DocumentFilter() {
               <div className="relative">
                 <select
                   id="filter-filiere"
-                  value={currentFiliere}
+                  value={selectedFiliere}
                   onChange={(e) => handleFiliereChange(e.target.value)}
-                  disabled={!currentFaculty}
+                  disabled={!selectedFaculty}
                   className={`w-full appearance-none ${
                     isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
                   } py-2 rounded-lg border text-xs outline-none transition ${
-                    !currentFaculty
+                    !selectedFaculty
                       ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                       : "bg-white border-gray-300 text-gray-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
                   }`}
                 >
                   <option value="">
-                    {!currentFaculty
+                    {!selectedFaculty
                       ? t("upload.select_faculty", "Choisir l'établissement d'abord")
                       : t("filter.all_filieres", "Toutes les filières")}
                   </option>
@@ -349,7 +375,7 @@ export default function DocumentFilter() {
               </div>
             </div>
 
-            {/* 5. Semester Dropdown */}
+            {/* 5. Semester Dropdown (Active immediately once Filière is chosen) */}
             <div>
               <label
                 htmlFor="filter-semester"
@@ -361,19 +387,19 @@ export default function DocumentFilter() {
               <div className="relative">
                 <select
                   id="filter-semester"
-                  value={currentSemester}
+                  value={selectedSemester}
                   onChange={(e) => handleSemesterChange(e.target.value)}
-                  disabled={!currentFiliere}
+                  disabled={!selectedFiliere}
                   className={`w-full appearance-none ${
                     isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
                   } py-2 rounded-lg border text-xs outline-none transition ${
-                    !currentFiliere
+                    !selectedFiliere
                       ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                       : "bg-white border-gray-300 text-gray-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
                   }`}
                 >
                   <option value="">
-                    {!currentFiliere
+                    {!selectedFiliere
                       ? t("upload.select_filiere", "Choisir la filière d'abord")
                       : t("filter.all_semesters", "Tous les semestres")}
                   </option>
@@ -391,7 +417,7 @@ export default function DocumentFilter() {
               </div>
             </div>
 
-            {/* 6. Module Dropdown */}
+            {/* 6. Module Dropdown (Active immediately once Semestre is chosen) */}
             <div>
               <label
                 htmlFor="filter-module"
@@ -403,19 +429,19 @@ export default function DocumentFilter() {
               <div className="relative">
                 <select
                   id="filter-module"
-                  value={currentModule}
+                  value={selectedModule}
                   onChange={(e) => handleModuleChange(e.target.value)}
-                  disabled={!currentSemester}
+                  disabled={!selectedSemester}
                   className={`w-full appearance-none ${
                     isRTL ? "pl-8 pr-3" : "pr-8 pl-3"
                   } py-2 rounded-lg border text-xs outline-none transition ${
-                    !currentSemester
+                    !selectedSemester
                       ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                       : "bg-white border-gray-300 text-gray-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer"
                   }`}
                 >
                   <option value="">
-                    {!currentSemester
+                    {!selectedSemester
                       ? t("upload.select_semester", "Choisir le semestre d'abord")
                       : t("filter.all_modules", "Tous les modules")}
                   </option>
@@ -434,7 +460,7 @@ export default function DocumentFilter() {
             </div>
           </div>
 
-          {/* Pending indicator */}
+          {/* Pending indicator for database query */}
           {isPending && (
             <div className="pt-2 flex items-center justify-center gap-2 text-xs text-blue-600">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />

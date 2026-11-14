@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   FolderSearch,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import DocumentFilter from "./DocumentFilter";
 import DocumentCard, { DocumentCardItem } from "./DocumentCard";
+import DocumentPreviewModal, { PreviewDocumentData } from "./DocumentPreviewModal";
 import MyUploadsSection from "./MyUploadsSection";
 import Pagination from "./Pagination";
 import { useI18n } from "@/lib/i18nContext";
@@ -30,7 +32,10 @@ export default function DocumentsExplorerView({
   pageSize,
   hasFiltersApplied,
 }: DocumentsExplorerViewProps) {
-  const { t, isRTL } = useI18n();
+  const { t } = useI18n();
+
+  // Single shared modal state – avoids mounting N modals in the DOM
+  const [previewDoc, setPreviewDoc] = useState<PreviewDocumentData | null>(null);
 
   return (
     <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
@@ -158,7 +163,11 @@ export default function DocumentsExplorerView({
               {/* Document Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {documents.map((doc) => (
-                  <DocumentCard key={doc.id} document={doc} />
+                  <DocumentCard
+                    key={doc.id}
+                    document={doc}
+                    onPreview={setPreviewDoc}
+                  />
                 ))}
               </div>
 
@@ -173,6 +182,13 @@ export default function DocumentsExplorerView({
           )}
         </div>
       </div>
+
+      {/* Single shared preview modal – only ONE in the DOM at a time */}
+      <DocumentPreviewModal
+        document={previewDoc}
+        isOpen={Boolean(previewDoc)}
+        onClose={() => setPreviewDoc(null)}
+      />
     </main>
   );
 }

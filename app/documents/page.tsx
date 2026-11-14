@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { NADOR_FACULTIES } from "@/lib/nadorData";
 import { Prisma, DocType } from "@prisma/client";
 import { documentCardSelect } from "@/lib/cachedData";
+import { unstable_cache } from "next/cache";
 
 type SearchParamsPromise = Promise<{
   search?: string;
@@ -21,9 +22,58 @@ interface PageProps {
   searchParams: SearchParamsPromise;
 }
 
+// Only force-dynamic when search query is present (text search can't be cached easily).
+// Otherwise Next.js will serve from ISR cache which is much faster.
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 12;
+
+/**
+ * Build a cache key from all filter values so we can cache identical filter combos.
+ * Text search is excluded from cache (always fresh).
+ */
+function buildCacheKey(
+  faculty: string,
+  filiere: string,
+  semester: string,
+  moduleName: string,
+  docType: string,
+  page: number
+) {
+  return `docs:${faculty}|${filiere}|${semester}|${moduleName}|${docType}|${page}`;
+}
+
+async function fetchDocuments(
+  where: Prisma.DocumentWhereInput,
+  skip: number,
+  cacheKey: string,
+  hasSearch: boolean
+) {
+  const queryFn = () =>
+    Promise.all([
+      prisma.document.count({ where }),
+      prisma.document.findMany({
+        where,
+        skip,
+        take: PAGE_SIZE,
+        orderBy: { createdAt: "desc" },
+        select: documentCardSelect,
+      }),
+    ]);
+
+  // Skip cache for text searches (too many unique keys)
+  if (hasSearch) {
+    return queryFn();
+  }
+
+  // Use cache for filter-only queries (revalidate every 30s or on 'documents' tag)
+  const cached = unstable_cache(queryFn, [cacheKey], {
+    revalidate: 30,
+    tags: ["documents"],
+  });
+
+  return cached();
+}
 
 async function DocumentsContent({ searchParams }: { searchParams: SearchParamsPromise }) {
   const resolvedParams = await searchParams;
@@ -103,20 +153,10 @@ async function DocumentsContent({ searchParams }: { searchParams: SearchParamsPr
   let documents: any[] = [];
 
   try {
-    const [countResult, docsResult] = await Promise.all([
-      prisma.document.count({ where }),
-      prisma.document.findMany({
-        where,
-        skip,
-        take: PAGE_SIZE,
-        orderBy: {
-          createdAt: "desc",
-        },
-        select: documentCardSelect,
-      }),
-    ]);
-    totalCount = countResult;
-    documents = docsResult;
+    const cacheKey = buildCacheKey(faculty, filiere, semester, moduleName, docType, currentPage);
+    const [countResult, docsResult] = await fetchDocuments(where, skip, cacheKey, Boolean(search));
+    totalCount = countResult as number;
+    documents = docsResult as any[];
   } catch (err) {
     console.error("Documents query error:", err);
   }
@@ -145,7 +185,6 @@ export default async function DocumentsPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       <Navbar />
       <Suspense
-        key={JSON.stringify(resolvedParams)}
         fallback={
           <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
             <div className="flex flex-col lg:flex-row items-start gap-8">

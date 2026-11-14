@@ -67,6 +67,7 @@ model Document {
 
   @@index([status, createdAt(sort: Desc)])
   @@index([status, type])
+  @@index([status, subjectId])
   @@index([subjectId])
   @@index([type])
   @@index([likes(sort: Desc)])

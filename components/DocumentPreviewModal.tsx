@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   ExternalLink,
@@ -44,6 +44,13 @@ export default function DocumentPreviewModal({
   isAdmin = false,
 }: DocumentPreviewModalProps) {
   const { t, isRTL } = useI18n();
+  const [iframeLoading, setIframeLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIframeLoading(true);
+    }
+  }, [isOpen, document?.id]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,11 +74,11 @@ export default function DocumentPreviewModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl h-[92vh] sm:h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-4xl h-[92vh] sm:h-[90vh] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 will-change-transform"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -173,14 +180,25 @@ export default function DocumentPreviewModal({
         </div>
 
         {/* Modal Body / Viewer */}
-        <div className="flex-1 bg-slate-100 overflow-hidden flex items-center justify-center p-2 sm:p-4">
+        <div className="flex-1 bg-slate-100 overflow-hidden flex items-center justify-center p-2 sm:p-4 relative">
           {isPdf ? (
-            <iframe
-              src={document.fileUrl}
-              className="w-full h-full bg-white rounded-xl shadow-inner border border-gray-200"
-              title={document.title}
-              allow="fullscreen"
-            />
+            <>
+              {iframeLoading && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/95">
+                  <div className="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-xs font-semibold text-gray-700 animate-pulse">
+                    {t("documentViewer.loading", "Chargement du document...")}
+                  </p>
+                </div>
+              )}
+              <iframe
+                src={document.fileUrl}
+                className="w-full h-full bg-white rounded-xl shadow-inner border border-gray-200"
+                title={document.title}
+                allow="fullscreen"
+                onLoad={() => setIframeLoading(false)}
+              />
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center overflow-auto p-2 sm:p-4">
               <img
