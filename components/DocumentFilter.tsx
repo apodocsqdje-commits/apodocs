@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useTransition, ChangeEvent } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useState, useEffect, ChangeEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { NADOR_FACULTIES, Faculty, Filiere, Semester } from "@/lib/nadorData";
+import { useFilterNavigation } from "@/hooks/useFilterNavigation";
 import { useI18n } from "@/lib/i18nContext";
 import {
   Search,
@@ -18,10 +19,8 @@ import {
 } from "lucide-react";
 
 export default function DocumentFilter() {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const { updateFilters, resetFilters, isPending } = useFilterNavigation();
   const { t, isRTL } = useI18n();
 
   const documentTypeOptions = [
@@ -73,44 +72,22 @@ export default function DocumentFilter() {
   );
   const availableModules: string[] = selectedSemesterObj?.modules || [];
 
-  // Helper to push URL updates via startTransition
-  const updateUrlFilters = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString());
-
-    // Reset pagination to page 1 on filter changes
-    params.delete("page");
-
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value && value.trim()) {
-        params.set(key, value.trim());
-      } else {
-        params.delete(key);
-      }
-    });
-
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    });
+  /**
+   * Every handler below updates its local state immediately (0 ms feedback)
+   * and schedules a single coalesced navigation through `useFilterNavigation`.
+   * Multiple changes made in quick succession are merged into one request.
+   */
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    updateFilters({ search: value });
   };
 
-  // Debounced search input handler
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchInput !== currentSearch) {
-        updateUrlFilters({ search: searchInput });
-      }
-    }, 350);
-
-    return () => clearTimeout(timer);
-  }, [searchInput]);
-
-  // Instant Cascading Change Handlers (0ms response)
   const handleFacultyChange = (newFacultyId: string) => {
     setSelectedFaculty(newFacultyId);
     setSelectedFiliere("");
     setSelectedSemester("");
     setSelectedModule("");
-    updateUrlFilters({
+    updateFilters({
       faculty: newFacultyId || null,
       filiere: null,
       semester: null,
@@ -122,7 +99,7 @@ export default function DocumentFilter() {
     setSelectedFiliere(newFiliereId);
     setSelectedSemester("");
     setSelectedModule("");
-    updateUrlFilters({
+    updateFilters({
       filiere: newFiliereId || null,
       semester: null,
       module: null,
@@ -132,7 +109,7 @@ export default function DocumentFilter() {
   const handleSemesterChange = (newSemesterId: string) => {
     setSelectedSemester(newSemesterId);
     setSelectedModule("");
-    updateUrlFilters({
+    updateFilters({
       semester: newSemesterId || null,
       module: null,
     });
@@ -140,14 +117,14 @@ export default function DocumentFilter() {
 
   const handleModuleChange = (newModuleName: string) => {
     setSelectedModule(newModuleName);
-    updateUrlFilters({
+    updateFilters({
       module: newModuleName || null,
     });
   };
 
   const handleTypeChange = (newType: string) => {
     setSelectedType(newType);
-    updateUrlFilters({
+    updateFilters({
       type: newType || null,
     });
   };
@@ -159,9 +136,7 @@ export default function DocumentFilter() {
     setSelectedSemester("");
     setSelectedModule("");
     setSelectedType("");
-    startTransition(() => {
-      router.push(pathname, { scroll: false });
-    });
+    resetFilters();
   };
 
   const hasActiveFilters = Boolean(
@@ -237,7 +212,7 @@ export default function DocumentFilter() {
                 type="text"
                 value={searchInput}
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setSearchInput(e.target.value)
+                  handleSearchChange(e.target.value)
                 }
                 placeholder={t("filter.search_placeholder", "Ex: Microéconomie, Algèbre...")}
                 className={`w-full ${
@@ -252,7 +227,10 @@ export default function DocumentFilter() {
               {searchInput && (
                 <button
                   type="button"
-                  onClick={() => setSearchInput("")}
+                  onClick={() => {
+                    setSearchInput("");
+                    updateFilters({ search: "" }, { immediate: true });
+                  }}
                   className={`absolute ${
                     isRTL ? "left-2.5" : "right-2.5"
                   } top-2.5 text-gray-400 hover:text-gray-600 cursor-pointer`}

@@ -52,15 +52,30 @@ function parseConnectionString(rawUrl: string | undefined): {
 function createPool(): Pool {
   const rawUrl = process.env.DATABASE_URL;
   const dbConfig = parseConnectionString(rawUrl);
-  const maxPoolSize = process.env.PG_MAX_POOL
-    ? parseInt(process.env.PG_MAX_POOL, 10)
-    : 10;
+
+  const configuredPoolSize = Number.parseInt(process.env.PG_MAX_POOL ?? "", 10);
+  const maxPoolSize =
+    Number.isFinite(configuredPoolSize) && configuredPoolSize > 0
+      ? Math.min(configuredPoolSize, 50)
+      : 10;
+
+  if (!rawUrl) {
+    console.error(
+      "[prisma] DATABASE_URL is not set. Database queries will fail."
+    );
+  }
 
   const p = new Pool({
     ...dbConfig,
     max: maxPoolSize,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
+    // Keep TCP connections warm. Remote poolers (e.g. Supabase/PgBouncer)
+    // silently drop idle sockets; without keep-alive the next query can stall
+    // until the OS TCP timeout.
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
+    application_name: "apodocs",
   });
 
   p.on("error", (err) => {
@@ -71,9 +86,9 @@ function createPool(): Pool {
 }
 
 const pool = globalForPrisma.pgPool ?? createPool();
-if (process.env.DATABASE_URL) {
-  globalForPrisma.pgPool = pool;
-}
+// Always bind to globalThis so every module graph (RSC, server actions, route
+// handlers) reuses the same pool instead of creating a new one per import.
+globalForPrisma.pgPool = pool;
 
 const adapter = new PrismaPg(pool);
 
@@ -87,6 +102,4 @@ export const prisma =
         : ["error"],
   });
 
-if (process.env.DATABASE_URL) {
-  globalForPrisma.prisma = prisma;
-}
+globalForPrisma.prisma = prisma;

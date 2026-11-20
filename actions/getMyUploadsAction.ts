@@ -13,9 +13,8 @@ export async function getMyUploadsByToken(token: string) {
       where: {
         uploaderToken: token.trim(),
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 50,
       select: documentCardSelect,
     });
 
@@ -45,9 +44,8 @@ export async function getMyUploads(ids?: string[], token?: string) {
 
     const docs = await prisma.document.findMany({
       where: conditions.length === 1 ? conditions[0] : { OR: conditions },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 50,
       select: documentCardSelect,
     });
 
