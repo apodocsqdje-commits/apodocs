@@ -58,7 +58,8 @@ export function useFilterNavigation() {
 
     if (Object.keys(pending).length === 0) return;
 
-    const params = new URLSearchParams(committedRef.current.toString());
+    const previousQuery = committedRef.current.toString();
+    const params = new URLSearchParams(previousQuery);
     // Any filter change must go back to the first page.
     params.delete("page");
 
@@ -71,11 +72,16 @@ export function useFilterNavigation() {
       }
     }
 
+    const query = params.toString();
+
+    // Nothing actually changed (e.g. re-selecting the current option): avoid a
+    // useless RSC round-trip.
+    if (query === previousQuery) return;
+
     // Keep the ref in sync before the navigation resolves, otherwise a second
     // change made during the transition would rebuild from the old params.
     committedRef.current = params;
 
-    const query = params.toString();
     const href = query ? `${pathname}?${query}` : pathname;
 
     startTransition(() => {
@@ -101,7 +107,10 @@ export function useFilterNavigation() {
   const resetFilters = useCallback(() => {
     clearTimer();
     pendingRef.current = {};
+    const hadQuery = committedRef.current.toString() !== "";
     committedRef.current = new URLSearchParams();
+
+    if (!hadQuery) return;
 
     startTransition(() => {
       router.replace(pathname, { scroll: false });
@@ -111,5 +120,15 @@ export function useFilterNavigation() {
   // Never navigate after the component has unmounted.
   useEffect(() => () => clearTimer(), [clearTimer]);
 
-  return { updateFilters, resetFilters, isPending };
+  /**
+   * Lets the UI know whether a field is waiting to be flushed. It is used to
+   * avoid the URL response of an older navigation overwriting a newer
+   * optimistic value (e.g. typing while a request is still in flight).
+   */
+  const hasPendingUpdate = useCallback(
+    (key: string) => Object.prototype.hasOwnProperty.call(pendingRef.current, key),
+    []
+  );
+
+  return { updateFilters, resetFilters, isPending, hasPendingUpdate };
 }

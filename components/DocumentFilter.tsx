@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { NADOR_FACULTIES, Faculty, Filiere, Semester } from "@/lib/nadorData";
 import { useFilterNavigation } from "@/hooks/useFilterNavigation";
@@ -20,7 +20,8 @@ import {
 
 export default function DocumentFilter() {
   const searchParams = useSearchParams();
-  const { updateFilters, resetFilters, isPending } = useFilterNavigation();
+  const { updateFilters, resetFilters, isPending, hasPendingUpdate } =
+    useFilterNavigation();
   const { t, isRTL } = useI18n();
 
   const documentTypeOptions = [
@@ -48,15 +49,28 @@ export default function DocumentFilter() {
   const [selectedType, setSelectedType] = useState(currentType);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Sync local state if URL changes externally (e.g. browser back/forward or global reset)
-  useEffect(() => {
-    setSearchInput(currentSearch);
-    setSelectedFaculty(currentFaculty);
-    setSelectedFiliere(currentFiliere);
-    setSelectedSemester(currentSemester);
-    setSelectedModule(currentModule);
-    setSelectedType(currentType);
-  }, [currentSearch, currentFaculty, currentFiliere, currentSemester, currentModule, currentType]);
+  // Sync local state when the URL changes from the outside (back/forward,
+  // global reset, shared link). Fields that are still waiting to be flushed are
+  // left untouched so a slower/older response can never overwrite them.
+  const urlStateKey = [
+    currentSearch,
+    currentFaculty,
+    currentFiliere,
+    currentSemester,
+    currentModule,
+    currentType,
+  ].join("\u0000");
+  const [syncedUrlStateKey, setSyncedUrlStateKey] = useState(urlStateKey);
+
+  if (syncedUrlStateKey !== urlStateKey) {
+    setSyncedUrlStateKey(urlStateKey);
+    if (!hasPendingUpdate("search")) setSearchInput(currentSearch);
+    if (!hasPendingUpdate("faculty")) setSelectedFaculty(currentFaculty);
+    if (!hasPendingUpdate("filiere")) setSelectedFiliere(currentFiliere);
+    if (!hasPendingUpdate("semester")) setSelectedSemester(currentSemester);
+    if (!hasPendingUpdate("module")) setSelectedModule(currentModule);
+    if (!hasPendingUpdate("type")) setSelectedType(currentType);
+  }
 
   // Derived cascade options calculated instantly from local state
   const selectedFacultyObj: Faculty | undefined = NADOR_FACULTIES.find(
