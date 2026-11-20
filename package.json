@@ -9,6 +9,7 @@
     "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
+    "seed:full": "tsx prisma/seed-full.ts",
     "seed:admin": "tsx prisma/seed-admin.ts"
   },
   "dependencies": {

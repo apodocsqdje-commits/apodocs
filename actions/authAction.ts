@@ -28,19 +28,19 @@ export async function loginAdmin(
   formData: FormData
 ): Promise<AuthActionResult> {
   try {
-    const username = (formData.get("username") as string)?.trim();
+    const usernameInput = (formData.get("username") as string)?.trim();
     const password = (formData.get("password") as string)?.trim();
 
-    if (!username || !password) {
+    if (!usernameInput || !password) {
       return {
         success: false,
         error: "Veuillez saisir votre nom d'utilisateur et mot de passe.",
       };
     }
 
-    // Find the Admin in the database with strict field selection
+    // Try exact match first, then lowercase match
     let admin = await prisma.admin.findUnique({
-      where: { username },
+      where: { username: usernameInput },
       select: {
         id: true,
         username: true,
@@ -49,8 +49,20 @@ export async function loginAdmin(
       },
     });
 
+    if (!admin && usernameInput.toLowerCase() !== usernameInput) {
+      admin = await prisma.admin.findUnique({
+        where: { username: usernameInput.toLowerCase() },
+        select: {
+          id: true,
+          username: true,
+          password: true,
+          role: true,
+        },
+      });
+    }
+
     // Auto-seed fallback: Only run count check if default admin is attempted and not found
-    if (!admin && username === "admin") {
+    if (!admin && usernameInput.toLowerCase() === "admin") {
       const adminCount = await prisma.admin.count();
       if (adminCount === 0) {
         const defaultHashedPassword = await bcrypt.hash("admin123", 10);
@@ -108,9 +120,12 @@ export async function loginAdmin(
     };
   } catch (error) {
     console.error("Erreur loginAdmin:", error);
+    const detail = error instanceof Error ? error.message : "";
     return {
       success: false,
-      error: "Une erreur inattendue est survenue lors de la connexion.",
+      error: detail
+        ? `Une erreur est survenue lors de la connexion (${detail}).`
+        : "Une erreur inattendue est survenue lors de la connexion.",
     };
   }
 }

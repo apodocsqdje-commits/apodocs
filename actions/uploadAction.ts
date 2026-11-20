@@ -44,9 +44,9 @@ export async function uploadDocument(formData: FormData): Promise<UploadActionRe
     const facultyId = formData.get("facultyId") as string;
     const filiereId = formData.get("filiereId") as string;
     const semesterId = formData.get("semesterId") as string;
-    const moduleName = formData.get("moduleName") as string;
-    const documentTitle = formData.get("documentTitle") as string;
-    const documentType = formData.get("documentType") as string;
+    const moduleName = (formData.get("moduleName") || formData.get("module")) as string;
+    const documentTitle = (formData.get("documentTitle") || formData.get("title")) as string;
+    const documentType = (formData.get("documentType") || formData.get("type")) as string;
     const realName = (formData.get("realName") as string)?.trim();
     const authorNameRaw = (formData.get("authorName") as string)?.trim();
     const authorName = authorNameRaw || "طالب";

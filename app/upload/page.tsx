@@ -168,13 +168,16 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("title", title.trim());
+      formData.append("documentTitle", title.trim());
       formData.append("type", docType);
+      formData.append("documentType", docType);
       formData.append("realName", realName.trim());
       formData.append("authorName", authorName.trim());
       formData.append("facultyId", facultyId);
       formData.append("filiereId", filiereId);
       formData.append("semesterId", semesterId);
       formData.append("module", selectedModule);
+      formData.append("moduleName", selectedModule);
 
       // Client session token tracking for anonymous uploads
       let clientToken = "";

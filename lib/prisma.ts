@@ -15,32 +15,65 @@ interface GlobalPrismaContext {
 
 const globalForPrisma = globalThis as unknown as GlobalPrismaContext;
 
-const connectionString = process.env.DATABASE_URL;
-const isRemoteDb = Boolean(
-  connectionString &&
-    !connectionString.includes("localhost") &&
-    !connectionString.includes("127.0.0.1")
-);
+// Decode percent-encoded characters in the connection string (e.g. %40 → @)
+// so that pg Pool correctly parses the password.
+// Returns separate config object to avoid URL class re-encoding issue.
+function parseConnectionString(rawUrl: string | undefined): {
+  connectionString?: string;
+  user?: string;
+  password?: string;
+  host?: string;
+  port?: number;
+  database?: string;
+  ssl?: boolean | object;
+} {
+  if (!rawUrl) return {};
+  try {
+    const u = new URL(rawUrl);
+    const password = decodeURIComponent(u.password);
+    const user = decodeURIComponent(u.username);
+    const host = u.hostname;
+    const port = u.port ? parseInt(u.port, 10) : 5432;
+    const database = u.pathname.replace(/^\//, "");
+    const isRemote = !host.includes("localhost") && !host.includes("127.0.0.1");
+    return {
+      user,
+      password,
+      host,
+      port,
+      database,
+      ssl: isRemote ? { rejectUnauthorized: false } : undefined,
+    };
+  } catch {
+    return { connectionString: rawUrl };
+  }
+}
 
-// Connection pool configuration optimized for shared/container hosting
-const maxPoolSize = process.env.PG_MAX_POOL
-  ? parseInt(process.env.PG_MAX_POOL, 10)
-  : 10;
+function createPool(): Pool {
+  const rawUrl = process.env.DATABASE_URL;
+  const dbConfig = parseConnectionString(rawUrl);
+  const maxPoolSize = process.env.PG_MAX_POOL
+    ? parseInt(process.env.PG_MAX_POOL, 10)
+    : 10;
 
-const pool =
-  globalForPrisma.pgPool ??
-  new Pool({
-    connectionString,
+  const p = new Pool({
+    ...dbConfig,
     max: maxPoolSize,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
-    ssl: isRemoteDb ? { rejectUnauthorized: false } : undefined,
   });
 
-// Handle idle connection errors gracefully without crashing Node
-pool.on("error", (err) => {
-  console.error("Unexpected error on idle PostgreSQL pool client:", err);
-});
+  p.on("error", (err) => {
+    console.error("Unexpected error on idle PostgreSQL pool client:", err);
+  });
+
+  return p;
+}
+
+const pool = globalForPrisma.pgPool ?? createPool();
+if (process.env.DATABASE_URL) {
+  globalForPrisma.pgPool = pool;
+}
 
 const adapter = new PrismaPg(pool);
 
@@ -54,6 +87,6 @@ export const prisma =
         : ["error"],
   });
 
-// Always bind to globalThis to preserve singletons across all module re-evaluations
-globalForPrisma.pgPool = pool;
-globalForPrisma.prisma = prisma;
+if (process.env.DATABASE_URL) {
+  globalForPrisma.prisma = prisma;
+}
