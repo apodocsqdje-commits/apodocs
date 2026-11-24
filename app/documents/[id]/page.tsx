@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { documentCardSelect } from "@/lib/cachedData";
 import { unstable_cache } from "next/cache";
+import { getDocumentByIdRaw } from "@/lib/documentQueries";
 import DocumentViewerHeader from "@/components/DocumentViewerHeader";
 import DocumentViewerBody from "@/components/DocumentViewerBody";
 
@@ -17,11 +16,7 @@ export const dynamic = "force-dynamic";
 
 const getCachedDocumentById = (id: string) =>
   unstable_cache(
-    async () =>
-      prisma.document.findUnique({
-        where: { id },
-        select: documentCardSelect,
-      }),
+    async () => getDocumentByIdRaw(id),
     [`document-${id}`],
     { revalidate: 60, tags: ["documents", `doc-${id}`] }
   )();

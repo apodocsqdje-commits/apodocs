@@ -61,14 +61,16 @@ export async function loginAdmin(
       });
     }
 
-    // Auto-seed fallback: Only run count check if default admin is attempted and not found
-    if (!admin && usernameInput.toLowerCase() === "admin") {
+    // Auto-seed fallback: Only run count check if default initial admin is attempted and not found
+    const defaultUsername = process.env.INITIAL_ADMIN_USERNAME || "apodocs.qd.je@gmail.com";
+    if (!admin && usernameInput.toLowerCase() === defaultUsername.toLowerCase()) {
       const adminCount = await prisma.admin.count();
       if (adminCount === 0) {
-        const defaultHashedPassword = await bcrypt.hash("admin123", 10);
+        const defaultPassword = process.env.INITIAL_ADMIN_PASSWORD || "apodocs.qd.je@20202020";
+        const defaultHashedPassword = await bcrypt.hash(defaultPassword, 10);
         admin = await prisma.admin.create({
           data: {
-            username: "admin",
+            username: defaultUsername,
             password: defaultHashedPassword,
             role: "SUPER_ADMIN",
           },

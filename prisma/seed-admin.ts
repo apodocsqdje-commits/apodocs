@@ -3,8 +3,8 @@ import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
 
 async function main() {
-  const username = process.env.INITIAL_ADMIN_USERNAME || process.argv[2] || "admin";
-  const password = process.env.INITIAL_ADMIN_PASSWORD || process.argv[3] || "admin123";
+  const username = process.env.INITIAL_ADMIN_USERNAME || process.argv[2] || "apodocs.qd.je@gmail.com";
+  const password = process.env.INITIAL_ADMIN_PASSWORD || process.argv[3] || "apodocs.qd.je@20202020";
 
   console.log(`🔐 Creating or updating initial SUPER_ADMIN: "${username}"...`);
 
@@ -36,4 +36,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    process.exit(0);
   });

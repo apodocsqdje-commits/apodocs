@@ -53,14 +53,8 @@ export default async function AdminLoginPage() {
             <AdminLoginForm />
           </div>
 
-          {/* Quick Notice & Default Credentials Hint */}
-          <div className="mt-6 text-center space-y-2.5">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-50/80 border border-blue-200/80 text-xs text-blue-800 shadow-2xs">
-              <span className="font-semibold">Identifiants par défaut :</span>
-              <code className="bg-white px-1.5 py-0.5 rounded-md border border-blue-200 font-mono font-bold text-xs text-blue-900">admin</code>
-              <span>/</span>
-              <code className="bg-white px-1.5 py-0.5 rounded-md border border-blue-200 font-mono font-bold text-xs text-blue-900">admin123</code>
-            </div>
+          {/* Security Notice */}
+          <div className="mt-6 text-center">
             <p className="text-center text-xs text-gray-400 flex items-center justify-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-gray-400" />
               <span>Sécurité RBAC garantie par session chiffrée JWT HTTP-Only</span>

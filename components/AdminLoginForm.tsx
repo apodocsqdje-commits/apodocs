@@ -48,7 +48,7 @@ export default function AdminLoginForm() {
             type="text"
             required
             autoComplete="username"
-            placeholder="Ex: admin ou mod_aissa"
+            placeholder="Identifiant ou e-mail"
             className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
