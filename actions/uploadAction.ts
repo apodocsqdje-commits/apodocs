@@ -68,6 +68,13 @@ export async function uploadDocument(formData: FormData): Promise<UploadActionRe
       return { success: false, error: "Veuillez joindre un fichier valide." };
     }
 
+    if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) {
+      return {
+        success: false,
+        error: "Configuration requise : DATABASE_URL n'est pas défini dans les variables d'environnement (Vercel).",
+      };
+    }
+
     // Step 1: Check the file's MIME type / extension before uploading
     const isPDF =
       file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
@@ -215,15 +222,20 @@ export async function uploadDocument(formData: FormData): Promise<UploadActionRe
     };
   } catch (error) {
     console.error("Erreur uploadDocument Cloudinary Server Action:", error);
-    const errorMessage =
+    const detail =
       error && typeof error === "object" && "message" in error
         ? String((error as { message: unknown }).message)
         : error instanceof Error
         ? error.message
         : "Une erreur inattendue est survenue lors de l'envoi vers Cloudinary.";
+    let userFriendlyError = detail;
+    if (detail.includes("Connection terminated due to connection timeout") || detail.includes("timeout")) {
+      userFriendlyError =
+        "Délai de connexion à la base de données dépassé. Assurez-vous que DATABASE_URL est bien configuré sur Vercel (Settings > Environment Variables) et que vous avez fait un Redeploy.";
+    }
     return {
       success: false,
-      error: errorMessage,
+      error: userFriendlyError,
     };
   }
 }

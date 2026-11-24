@@ -64,6 +64,12 @@ function createPool(): Pool {
     console.error(
       "[db] DATABASE_URL is not set in environment variables. Database queries will fail."
     );
+    const dummyPool = new Pool({
+      connectionTimeoutMillis: 500,
+      host: "unconfigured-database-url.invalid",
+    });
+    dummyPool.on("error", () => {});
+    return dummyPool;
   }
 
   const dbConfig = parseConnectionString(rawUrl);
