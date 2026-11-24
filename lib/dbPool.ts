@@ -72,23 +72,30 @@ function createPool(): Pool {
     return dummyPool;
   }
 
-  const dbConfig = parseConnectionString(rawUrl);
+  const isServerless = Boolean(
+    process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === "production"
+  );
 
   const configuredPoolSize = Number.parseInt(process.env.PG_MAX_POOL ?? "", 10);
   const maxPoolSize =
     Number.isFinite(configuredPoolSize) && configuredPoolSize > 0
       ? Math.min(configuredPoolSize, 50)
+      : isServerless
+      ? 1
       : 10;
 
+  const isRemote =
+    !rawUrl.includes("localhost") && !rawUrl.includes("127.0.0.1");
+
   const p = new Pool({
-    ...dbConfig,
+    connectionString: rawUrl,
+    ssl: isRemote ? { rejectUnauthorized: false } : undefined,
     max: maxPoolSize,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 20000,
-    // Remote poolers (Supabase/PgBouncer) drop idle sockets; keep-alive avoids
-    // waiting for the OS TCP timeout on the next query.
-    keepAlive: true,
-    keepAliveInitialDelayMillis: 10000,
+    // On serverless, drop idle connections quickly (1s) so frozen lambdas do not reuse dead sockets
+    idleTimeoutMillis: isServerless ? 1000 : 30000,
+    connectionTimeoutMillis: 10000,
+    // keepAlive is effective on long-running containers, but causes stale socket hangs on serverless freeze
+    keepAlive: !isServerless,
     application_name: "apodocs",
   });
 
