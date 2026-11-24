@@ -13,6 +13,18 @@ interface GlobalPoolContext {
 const globalForPool = globalThis as unknown as GlobalPoolContext;
 
 /** Decode percent-encoded characters (e.g. %40 → @) before parsing the URL. */
+function cleanUrl(url: string | undefined): string {
+  if (!url) return "";
+  let cleaned = url.trim();
+  if (
+    (cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+    (cleaned.startsWith("'") && cleaned.endsWith("'"))
+  ) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+  return cleaned;
+}
+
 function parseConnectionString(rawUrl: string | undefined): {
   connectionString?: string;
   user?: string;
@@ -22,9 +34,10 @@ function parseConnectionString(rawUrl: string | undefined): {
   database?: string;
   ssl?: boolean | object;
 } {
-  if (!rawUrl) return {};
+  const cleaned = cleanUrl(rawUrl);
+  if (!cleaned) return {};
   try {
-    const u = new URL(rawUrl);
+    const u = new URL(cleaned);
     const password = decodeURIComponent(u.password);
     const user = decodeURIComponent(u.username);
     const host = u.hostname;
@@ -40,12 +53,19 @@ function parseConnectionString(rawUrl: string | undefined): {
       ssl: isRemote ? { rejectUnauthorized: false } : undefined,
     };
   } catch {
-    return { connectionString: rawUrl };
+    return { connectionString: cleaned };
   }
 }
 
 function createPool(): Pool {
-  const rawUrl = process.env.DATABASE_URL;
+  const rawUrl = cleanUrl(process.env.DATABASE_URL || process.env.DIRECT_URL);
+
+  if (!rawUrl) {
+    console.error(
+      "[db] DATABASE_URL is not set in environment variables. Database queries will fail."
+    );
+  }
+
   const dbConfig = parseConnectionString(rawUrl);
 
   const configuredPoolSize = Number.parseInt(process.env.PG_MAX_POOL ?? "", 10);
@@ -54,15 +74,11 @@ function createPool(): Pool {
       ? Math.min(configuredPoolSize, 50)
       : 10;
 
-  if (!rawUrl) {
-    console.error("[db] DATABASE_URL is not set. Database queries will fail.");
-  }
-
   const p = new Pool({
     ...dbConfig,
     max: maxPoolSize,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 20000,
     // Remote poolers (Supabase/PgBouncer) drop idle sockets; keep-alive avoids
     // waiting for the OS TCP timeout on the next query.
     keepAlive: true,

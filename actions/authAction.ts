@@ -38,6 +38,13 @@ export async function loginAdmin(
       };
     }
 
+    if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) {
+      return {
+        success: false,
+        error: "Configuration requise : DATABASE_URL n'est pas défini dans les variables d'environnement (Vercel).",
+      };
+    }
+
     // Try exact match first, then lowercase match
     let admin = await prisma.admin.findUnique({
       where: { username: usernameInput },
@@ -123,11 +130,16 @@ export async function loginAdmin(
   } catch (error) {
     console.error("Erreur loginAdmin:", error);
     const detail = error instanceof Error ? error.message : "";
+    let userFriendlyError = "Une erreur inattendue est survenue lors de la connexion.";
+    if (detail.includes("Connection terminated due to connection timeout") || detail.includes("timeout")) {
+      userFriendlyError =
+        "Délai de connexion à la base de données dépassé. Assurez-vous que DATABASE_URL est bien configuré sur Vercel et que le projet Supabase est actif.";
+    } else if (detail) {
+      userFriendlyError = `Une erreur est survenue lors de la connexion (${detail}).`;
+    }
     return {
       success: false,
-      error: detail
-        ? `Une erreur est survenue lors de la connexion (${detail}).`
-        : "Une erreur inattendue est survenue lors de la connexion.",
+      error: userFriendlyError,
     };
   }
 }
